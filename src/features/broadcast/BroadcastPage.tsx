@@ -32,6 +32,7 @@ export const BroadcastPage = () => {
   const [showOverlay, setShowOverlay] = useState(true);
   const [showVideo, setShowVideo] = useState(true);
   const [copiedSlot, setCopiedSlot] = useState<string | null>(null);
+  const [showScoreboardOverlay, setShowScoreboardOverlay] = useState(true);
   
   const programVideoRef = useRef<HTMLVideoElement>(null);
 
@@ -547,6 +548,26 @@ export const BroadcastPage = () => {
               >
                 CLEAR
               </button>
+            </div>
+          </div>
+
+          {/* Scoreboard Overlay Toggle */}
+          <div className="bg-slate-800 rounded-lg p-3 border border-slate-700">
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Overlay Components</h3>
+            <div className="flex flex-col gap-2">
+              <label className="flex items-center justify-between">
+                <span className="text-xs text-slate-300">Scoreboard</span>
+                <button
+                  onClick={() => {
+                    const next = !showScoreboardOverlay;
+                    setShowScoreboardOverlay(next);
+                    socket.emit('overlay:config', { matchId, showScoreboard: next });
+                  }}
+                  className={`px-2 py-1 rounded text-xs ${showScoreboardOverlay ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'}`}
+                >
+                  {showScoreboardOverlay ? 'Visible' : 'Hidden'}
+                </button>
+              </label>
             </div>
           </div>
 

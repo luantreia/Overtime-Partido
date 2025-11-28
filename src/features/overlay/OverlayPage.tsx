@@ -17,6 +17,7 @@ export const OverlayPage = () => {
   const [activeOverlay, setActiveOverlay] = useState<{type: string, payload?: any} | null>(null);
   const [matchData, setMatchData] = useState<any>(null);
   const [showSetTimer, setShowSetTimer] = useState(true);
+  const [showScoreboard, setShowScoreboard] = useState(true);
   const [isSocketConnected, setIsSocketConnected] = useState(socket.connected);
   const { state: timersState, overlayActions } = useDriftFreeTimers({ mode: 'overlay', matchId, socket });
 
@@ -246,6 +247,7 @@ export const OverlayPage = () => {
 
     socket.on('overlay:config', (data) => {
       if (data.showSetTimer !== undefined) setShowSetTimer(data.showSetTimer);
+      if (data.showScoreboard !== undefined) setShowScoreboard(data.showScoreboard);
     });
 
     return () => {
@@ -302,7 +304,9 @@ export const OverlayPage = () => {
         <div className={`absolute top-2 right-2 w-3 h-3 rounded-full transition-colors duration-500 ${isDataFlowing ? 'bg-green-500 opacity-50' : 'bg-red-500 opacity-80 animate-pulse'}`} title={isDataFlowing ? "Recibiendo datos" : "Sin conexión/datos"} />
 
         {/* SCOREBOARD (Top Left) */}
-        <OverlayScoreboard matchData={matchData} score={score} timers={timersState} showSetTimer={showSetTimer} />
+        {showScoreboard && (
+          <OverlayScoreboard matchData={matchData} score={score} timers={timersState} showSetTimer={showSetTimer} />
+        )}
 
         {/* ANIMATION LAYER (Centered) */}
         {activeOverlay?.type === 'GOAL' && (
