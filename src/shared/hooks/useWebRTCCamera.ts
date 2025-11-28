@@ -365,9 +365,9 @@ export function useWebRTCCamera({
       const pc = peerConnectionRef.current;
       if (!pc) return;
 
-      // Ignore if already connected (happens with multiple compositors)
-      if (pc.signalingState === 'stable') {
-        console.log('Ignoring duplicate answer - already connected');
+      // Ignore if already have remote description (happens with multiple compositors)
+      if (pc.remoteDescription) {
+        console.log('Ignoring duplicate answer - already have remote description');
         return;
       }
 
