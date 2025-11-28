@@ -310,22 +310,15 @@ export function useWebRTCCamera({
   const initiateConnection = useCallback(async () => {
     if (!localStream || !socket) return;
 
+    // Clear pending candidates - they're from old connections
+    pendingIceCandidatesRef.current = [];
+
     const pc = createPeerConnection();
 
     // Add all tracks to peer connection
     localStream.getTracks().forEach(track => {
       pc.addTrack(track, localStream);
     });
-
-    // Add any pending ICE candidates
-    for (const candidate of pendingIceCandidatesRef.current) {
-      try {
-        await pc.addIceCandidate(new RTCIceCandidate(candidate));
-      } catch (err) {
-        console.warn('Error adding pending ICE candidate:', err);
-      }
-    }
-    pendingIceCandidatesRef.current = [];
 
     // Create and send offer
     try {
@@ -374,6 +367,16 @@ export function useWebRTCCamera({
 
       try {
         await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
+        
+        // Now process any pending ICE candidates
+        for (const candidate of pendingIceCandidatesRef.current) {
+          try {
+            await pc.addIceCandidate(new RTCIceCandidate(candidate));
+          } catch (err) {
+            console.warn('Error adding queued ICE candidate:', err);
+          }
+        }
+        pendingIceCandidatesRef.current = [];
       } catch (err) {
         console.error('Error setting remote description:', err);
         setError('Failed to establish connection');
