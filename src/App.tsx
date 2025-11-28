@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } f
 import { ControlPage } from './features/control/ControlPage';
 import { BroadcastPage } from './features/broadcast/BroadcastPage';
 import { OverlayPage } from './features/overlay/OverlayPage';
+import { CameraCapturePage } from './features/camera';
 import LoginPage from './features/auth/pages/LoginPage';
 import RegisterPage from './features/auth/pages/RegisterPage';
 import { AuthProvider, useAuth } from './app/providers/AuthContext';
@@ -31,6 +32,9 @@ function AppContent() {
       {/* Ruta Overlay: Sin Layout, pantalla completa, pública (o protegida si se desea) */}
       <Route path="/overlay" element={<OverlayPage />} />
       <Route path="/broadcast" element={<BroadcastPage />} />
+
+      {/* Rutas de Cámara: Públicas para acceso desde móviles */}
+      <Route path="/camera/:matchId/:slot" element={<CameraCapturePage />} />
 
       {/* Rutas de Autenticación */}
       <Route path="/login" element={<LoginPage />} />

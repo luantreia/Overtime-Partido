@@ -1,7 +1,11 @@
 import { io } from 'socket.io-client';
 
-// En producción, esto debería venir de una variable de entorno
-const URL = 'https://overtime-ddyl.onrender.com';
+// Use localhost in development, production URL otherwise
+const URL = process.env.NODE_ENV === 'development' 
+  ? 'http://localhost:5000'
+  : 'https://overtime-ddyl.onrender.com';
+
+console.log('Socket connecting to:', URL);
 
 export const socket = io(URL, {
   autoConnect: false,

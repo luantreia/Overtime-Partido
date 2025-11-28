@@ -1,22 +1,69 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { socket } from '../../services/socket';
 import { authFetch } from '../../shared/utils/authFetch';
 import OverlayScoreboard from './OverlayScoreboard';
 import { useDriftFreeTimers } from '../../shared/hooks/useDriftFreeTimers';
+import { useWebRTCCompositor } from '../../shared/hooks/useWebRTCCompositor';
 
 export const OverlayPage = () => {
   const [searchParams] = useSearchParams();
   const matchId = searchParams.get('matchId');
+  const transparent = searchParams.get('transparent') === 'true';
 
   const [score, setScore] = useState({ local: 0, visitor: 0 });
   const [activeOverlay, setActiveOverlay] = useState<{type: string, payload?: any} | null>(null);
   const [matchData, setMatchData] = useState<any>(null);
   const [showSetTimer, setShowSetTimer] = useState(true);
+  const [isSocketConnected, setIsSocketConnected] = useState(socket.connected);
   const { state: timersState, overlayActions } = useDriftFreeTimers({ mode: 'overlay', matchId, socket });
 
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [isDataFlowing, setIsDataFlowing] = useState(false);
+  
+  // Video ref for active camera
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // WebRTC compositor hook - only active if not in transparent mode (for OBS Browser Source)
+  const {
+    streams,
+    activeSlot,
+  } = useWebRTCCompositor({
+    socket: !transparent && isSocketConnected ? socket : null,
+    matchId: matchId || ''
+  });
+
+  // Update video when active camera changes
+  useEffect(() => {
+    if (videoRef.current && activeSlot && !transparent) {
+      const stream = streams.get(activeSlot);
+      if (stream) {
+        videoRef.current.srcObject = stream;
+      } else {
+        videoRef.current.srcObject = null;
+      }
+    } else if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  }, [activeSlot, streams, transparent]);
+
+  // Track socket connection
+  useEffect(() => {
+    const handleConnect = () => setIsSocketConnected(true);
+    const handleDisconnect = () => setIsSocketConnected(false);
+    
+    socket.on('connect', handleConnect);
+    socket.on('disconnect', handleDisconnect);
+    
+    if (socket.connected) {
+      setIsSocketConnected(true);
+    }
+    
+    return () => {
+      socket.off('connect', handleConnect);
+      socket.off('disconnect', handleDisconnect);
+    };
+  }, []);
 
   // Watchdog: Request sync if no data received for 2 seconds (Aggressive recovery)
   useEffect(() => {
@@ -175,46 +222,75 @@ export const OverlayPage = () => {
   );
   if (!matchData) return <div className="text-white p-10 bg-gray-800">Cargando datos del partido...</div>;
 
+  // Determine background: transparent for OBS layer, black with video for full stream
+  const showVideo = !transparent;
+
   return (
-    <div className="w-screen h-screen bg-transparent overflow-hidden relative font-sans">
-      {/* Connection Status Indicator (Hidden in production usually, but useful for debugging) */}
-      <div className={`absolute top-2 right-2 w-3 h-3 rounded-full transition-colors duration-500 z-50 ${isDataFlowing ? 'bg-green-500 opacity-50' : 'bg-red-500 opacity-80 animate-pulse'}`} title={isDataFlowing ? "Recibiendo datos" : "Sin conexión/datos"} />
-
-      {/* Esto simula el área transparente de OBS. 
-          En producción, el body debe ser transparente. */}
+    <div className={`w-screen h-screen overflow-hidden relative font-sans ${transparent ? 'bg-transparent' : 'bg-black'}`}>
       
-      {/* SCOREBOARD (Top Left) - extracted to reusable component */}
-      <OverlayScoreboard matchData={matchData} score={score} timers={timersState} showSetTimer={showSetTimer} />
-
-      {/* ANIMATION LAYER (Centered) */}
-      {activeOverlay?.type === 'GOAL' && (
-        <div className="absolute inset-0 flex items-center justify-center animate-bounce">
-          <div className="bg-green-600 text-white text-9xl font-black py-10 px-20 rounded-3xl shadow-lg border-8 border-white transform rotate-[-5deg]">
-            GOL !!!
-          </div>
+      {/* VIDEO LAYER - Only shown when not in transparent mode */}
+      {showVideo && (
+        <div className="absolute inset-0 z-0">
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted={false}
+            className="w-full h-full object-contain"
+          />
+          
+          {/* No camera placeholder */}
+          {!activeSlot && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
+              <div className="text-center text-gray-500">
+                <svg className="w-24 h-24 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                <p className="text-xl">Esperando cámara...</p>
+                <p className="text-sm mt-2">Selecciona una cámara en el Broadcast Control</p>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* TIMEOUT / REVIEW / SET WINNER */}
-      {(activeOverlay?.type === 'TIMEOUT' || activeOverlay?.type === 'REVIEW' || activeOverlay?.type === 'SET_WINNER') && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white text-gray-900 px-10 py-6 rounded-xl shadow-2xl border-4 border-blue-600 text-center transform scale-110">
-            <h2 className="text-4xl font-black uppercase mb-2">{activeOverlay.payload?.title}</h2>
-            <p className="text-2xl text-gray-600 font-bold">{activeOverlay.payload?.subtitle}</p>
-          </div>
-        </div>
-      )}
+      {/* OVERLAY LAYER - Always on top */}
+      <div className="absolute inset-0 z-10 pointer-events-none">
+        {/* Connection Status Indicator */}
+        <div className={`absolute top-2 right-2 w-3 h-3 rounded-full transition-colors duration-500 ${isDataFlowing ? 'bg-green-500 opacity-50' : 'bg-red-500 opacity-80 animate-pulse'}`} title={isDataFlowing ? "Recibiendo datos" : "Sin conexión/datos"} />
 
-      {/* LOWER THIRD (Bottom Left) */}
-      {activeOverlay?.type === 'LOWER_THIRD' && (
-        <div className="absolute bottom-20 left-20 animate-slide-in-left">
-          <div className="bg-white text-gray-900 px-8 py-4 rounded-r-full shadow-xl border-l-8 border-blue-600">
-            <h3 className="text-2xl font-bold">JUGADOR DESTACADO</h3>
-            <p className="text-lg text-gray-600">#10 Lionel Messi</p>
-          </div>
-        </div>
-      )}
+        {/* SCOREBOARD (Top Left) */}
+        <OverlayScoreboard matchData={matchData} score={score} timers={timersState} showSetTimer={showSetTimer} />
 
+        {/* ANIMATION LAYER (Centered) */}
+        {activeOverlay?.type === 'GOAL' && (
+          <div className="absolute inset-0 flex items-center justify-center animate-bounce">
+            <div className="bg-green-600 text-white text-9xl font-black py-10 px-20 rounded-3xl shadow-lg border-8 border-white transform rotate-[-5deg]">
+              GOL !!!
+            </div>
+          </div>
+        )}
+
+        {/* TIMEOUT / REVIEW / SET WINNER */}
+        {(activeOverlay?.type === 'TIMEOUT' || activeOverlay?.type === 'REVIEW' || activeOverlay?.type === 'SET_WINNER') && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white text-gray-900 px-10 py-6 rounded-xl shadow-2xl border-4 border-blue-600 text-center transform scale-110">
+              <h2 className="text-4xl font-black uppercase mb-2">{activeOverlay.payload?.title}</h2>
+              <p className="text-2xl text-gray-600 font-bold">{activeOverlay.payload?.subtitle}</p>
+            </div>
+          </div>
+        )}
+
+        {/* LOWER THIRD (Bottom Left) */}
+        {activeOverlay?.type === 'LOWER_THIRD' && (
+          <div className="absolute bottom-20 left-20 animate-slide-in-left">
+            <div className="bg-white text-gray-900 px-8 py-4 rounded-r-full shadow-xl border-l-8 border-blue-600">
+              <h3 className="text-2xl font-bold">JUGADOR DESTACADO</h3>
+              <p className="text-lg text-gray-600">#10 Lionel Messi</p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
