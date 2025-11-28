@@ -35,10 +35,24 @@ export const OverlayPage = () => {
 
   // Update video when active camera changes
   useEffect(() => {
-    if (videoRef.current && activeSlot && !transparent) {
-      const stream = streams.get(activeSlot);
+    console.log('[Overlay] Video update effect:', { activeSlot, transparent, streamsSize: streams.size, hasVideoRef: !!videoRef.current });
+    
+    if (videoRef.current && !transparent) {
+      // Use activeSlot if set, otherwise use first available stream
+      let stream: MediaStream | undefined;
+      
+      if (activeSlot) {
+        stream = streams.get(activeSlot);
+      } else if (streams.size > 0) {
+        // Fallback: use first available stream
+        stream = streams.values().next().value;
+      }
+      
+      console.log('[Overlay] Stream to display:', stream ? `${stream.getTracks().length} tracks` : 'null');
+      
       if (stream) {
         videoRef.current.srcObject = stream;
+        videoRef.current.play().catch(e => console.log('[Overlay] Video play error:', e));
       } else {
         videoRef.current.srcObject = null;
       }
@@ -239,8 +253,8 @@ export const OverlayPage = () => {
             className="w-full h-full object-contain"
           />
           
-          {/* No camera placeholder */}
-          {!activeSlot && (
+          {/* No camera placeholder - only show if no streams available */}
+          {streams.size === 0 && (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
               <div className="text-center text-gray-500">
                 <svg className="w-24 h-24 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
