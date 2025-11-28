@@ -77,7 +77,19 @@ export const BroadcastPage = () => {
         return null;
       };
 
-      const programStream = await waitForTracks(6, 250);
+      let programStream = await waitForTracks(6, 250);
+      if (!programStream) {
+        console.warn('[Broadcast] no tracks found initially for program stream; requesting camera state and retrying', { viewerSocketId });
+        // Ask server to refresh camera/compositor state (may trigger offers)
+        try {
+          socket.emit('camera:request_state', { matchId });
+        } catch (e) {
+          console.warn('[Broadcast] failed to emit camera:request_state', e);
+        }
+
+        // Retry with longer timeout
+        programStream = await waitForTracks(10, 500);
+      }
       if (!programStream) {
         console.warn('[Broadcast] captureStream unavailable or no tracks after retries - aborting init viewer', { viewerSocketId });
         return;
