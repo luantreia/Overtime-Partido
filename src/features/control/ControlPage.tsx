@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { socket } from '../../services/socket';
 import { authFetch } from '../../shared/utils/authFetch';
@@ -6,10 +6,30 @@ import { useToast } from '../../shared/components/Toast/ToastProvider';
 import OverlayScoreboard from '../overlay/OverlayScoreboard';
 import { useDriftFreeTimers } from '../../shared/hooks/useDriftFreeTimers';
 import { confirmPeriodChange } from '../../shared/utils/periodHelper';
-import { listSets, createSet, finishSetApi, reopenSetApi, deleteSetApi, changeWinnerApi, saveSetTimerState, SetPartidoDTO } from '../../shared/features/partido/services/setService';
+import { listSets, createSet, finishSetApi, reopenSetApi, deleteSetApi, changeWinnerApi, SetPartidoDTO } from '../../shared/features/partido/services/setService';
 import { showOverlay, hideOverlay } from '../../shared/services/overlayService';
 
 type SetPartido = SetPartidoDTO;
+
+// Custom hook for debounced actions (prevents double-clicks)
+const useDebounce = (delay = 600) => {
+  const lastCallRef = useRef<Map<string, number>>(new Map());
+  
+  const debounce = useCallback(<T extends (...args: any[]) => Promise<any>>(fn: T, key = 'default') => {
+    return async (...args: Parameters<T>): Promise<ReturnType<T> | undefined> => {
+      const now = Date.now();
+      const lastCall = lastCallRef.current.get(key) || 0;
+      if (now - lastCall < delay) {
+        console.log(`Debounced: ${key} (${now - lastCall}ms since last call)`);
+        return undefined;
+      }
+      lastCallRef.current.set(key, now);
+      return await fn(...args);
+    };
+  }, [delay]);
+  
+  return { debounce };
+};
 
 export const ControlPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -22,9 +42,13 @@ export const ControlPage: React.FC = () => {
   const [isConnected, setIsConnected] = useState(socket.connected);
   const [matchData, setMatchData] = useState<any>(null);
   const [sets, setSets] = useState<SetPartido[]>([]);
-  const [loadingSets, setLoadingSets] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showSetTimerOnOverlay, setShowSetTimerOnOverlay] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Debounce hook for preventing double-clicks
+  const { debounce } = useDebounce(600);
 
   const matchDurationMinutes = 20; // duración base por periodo
 
@@ -43,9 +67,10 @@ export const ControlPage: React.FC = () => {
     const m = Math.floor(seconds / 60); const s = seconds % 60; return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
   };
 
-  const loadMatchData = () => {
+  const loadMatchData = async () => {
     if (!matchId) return;
-    authFetch(`/partidos/${matchId}`).then((data: any) => {
+    try {
+      const data: any = await authFetch(`/partidos/${matchId}`);
       setMatchData(data);
       setLocalScore(data.marcadorLocal || 0);
       setVisitorScore(data.marcadorVisitante || 0);
@@ -58,52 +83,69 @@ export const ControlPage: React.FC = () => {
         controllerActions?.setMatchTimeManual(restored);
       }
       if (data.period && data.period !== period) controllerActions?.changePeriod(data.period);
-    }).catch(console.error);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const loadSets = (restore = false) => {
+  const loadSets = async (restore = false) => {
     if (!matchId) return;
-    setLoadingSets(true);
-    listSets(matchId)
-      .then(data => {
-        setSets(data);
-        let localPts = 0, visitPts = 0;
-        data.forEach(s => {
-          if (s.estadoSet !== 'finalizado') return;
-          if (matchData?.modalidad === 'Cloth') {
-            if (s.ganadorSet === 'local') localPts += 2; else if (s.ganadorSet === 'visitante') visitPts += 2; else if (s.ganadorSet === 'empate') { localPts++; visitPts++; }
-          } else {
-            if (s.ganadorSet === 'local') localPts++; else if (s.ganadorSet === 'visitante') visitPts++;
-          }
-        });
-        setLocalScore(localPts); setVisitorScore(visitPts);
-        if (restore) {
-          const current = data.find(s => s.estadoSet === 'en_juego');
-          if (current) {
-            let restoredSet = current.timerSetValue || 0;
-            if (current.timerSetRunning && current.timerSetLastUpdate) {
-              const elapsed = Math.floor((Date.now() - new Date(current.timerSetLastUpdate).getTime()) / 1000);
-              restoredSet = Math.max(0, restoredSet - elapsed);
-            }
-            controllerActions?.setSetTimeManual(restoredSet);
-            if (current.timerSetRunning) controllerActions?.startSetIfNeeded();
-            let restoredSD = current.timerSuddenDeathValue || 0;
-            if (current.timerSuddenDeathRunning && current.timerSetLastUpdate) {
-              const elapsed = Math.floor((Date.now() - new Date(current.timerSetLastUpdate).getTime()) / 1000);
-              restoredSD += elapsed;
-            }
-            if (current.timerSuddenDeathRunning) controllerActions?.startSuddenDeath();
-            if (current.suddenDeathMode) controllerActions?.setSuddenDeathMode(true);
-            localStorage.setItem(`suddenDeathMode_${matchId}`, String(current.suddenDeathMode || false));
-          }
+    setIsLoading(true);
+    try {
+      const data = await listSets(matchId);
+      setSets(data);
+      let localPts = 0, visitPts = 0;
+      data.forEach(s => {
+        if (s.estadoSet !== 'finalizado') return;
+        if (matchData?.modalidad === 'Cloth') {
+          if (s.ganadorSet === 'local') localPts += 2; else if (s.ganadorSet === 'visitante') visitPts += 2; else if (s.ganadorSet === 'empate') { localPts++; visitPts++; }
+        } else {
+          if (s.ganadorSet === 'local') localPts++; else if (s.ganadorSet === 'visitante') visitPts++;
         }
-      })
-      .catch(console.error)
-      .finally(() => setLoadingSets(false));
+      });
+      setLocalScore(localPts); setVisitorScore(visitPts);
+      if (restore) {
+        const current = data.find(s => s.estadoSet === 'en_juego');
+        if (current) {
+          let restoredSet = current.timerSetValue || 0;
+          if (current.timerSetRunning && current.timerSetLastUpdate) {
+            const elapsed = Math.floor((Date.now() - new Date(current.timerSetLastUpdate).getTime()) / 1000);
+            restoredSet = Math.max(0, restoredSet - elapsed);
+          }
+          controllerActions?.setSetTimeManual(restoredSet);
+          if (current.timerSetRunning) controllerActions?.startSetIfNeeded();
+          let restoredSD = current.timerSuddenDeathValue || 0;
+          if (current.timerSuddenDeathRunning && current.timerSetLastUpdate) {
+            const elapsed = Math.floor((Date.now() - new Date(current.timerSetLastUpdate).getTime()) / 1000);
+            restoredSD += elapsed;
+          }
+          if (current.timerSuddenDeathRunning) controllerActions?.startSuddenDeath();
+          if (current.suddenDeathMode) controllerActions?.setSuddenDeathMode(true);
+          localStorage.setItem(`suddenDeathMode_${matchId}`, String(current.suddenDeathMode || false));
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => { if (!matchId) navigate('/config'); }, [matchId, navigate]);
-  useEffect(() => { if (matchId) { loadMatchData(); loadSets(true); } }, [matchId]);
+  
+  useEffect(() => {
+    const initialize = async () => {
+      if (!matchId) return;
+      setIsLoading(true);
+      try {
+        await loadMatchData();
+        await loadSets(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    initialize();
+  }, [matchId]);
 
   useEffect(() => {
     if (!matchId) return;
@@ -133,9 +175,10 @@ export const ControlPage: React.FC = () => {
     try { await authFetch(`/partidos/${matchId}`, { method: 'PUT', body: { marcadorLocal: newLocal, marcadorVisitante: newVisitor } }); } catch (e) { console.error('Error guardando marcador', e); }
   };
 
-  const startNewSet = async (autoStart = false) => {
+  const startNewSetInternal = async (autoStart = false) => {
     if (!matchId) return;
     const nextSetNumber = sets.length + 1;
+    setIsSaving(true);
     try {
       const newSet = await createSet(matchId, nextSetNumber);
       addToast({ type: 'success', message: `Set ${nextSetNumber} iniciado` });
@@ -152,10 +195,12 @@ export const ControlPage: React.FC = () => {
       } else {
         // No save needed
       }
-    } catch { addToast({ type: 'error', message: 'Error al iniciar set' }); }
+    } catch { addToast({ type: 'error', message: 'Error al iniciar set' }); } finally { setIsSaving(false); }
   };
+  const startNewSet = debounce(startNewSetInternal, 'startNewSet');
 
-  const finishSet = async (setId: string, winner: 'local' | 'visitante' | 'empate') => {
+  const finishSetInternal = async (setId: string, winner: 'local' | 'visitante' | 'empate') => {
+    setIsSaving(true);
     try {
       // Only pause set/sudden death timer, not the match timer
       controllerActions?.pauseSetOnly();
@@ -169,13 +214,19 @@ export const ControlPage: React.FC = () => {
       else { if (winner === 'local') ptsLocal = 1; else if (winner === 'visitante') ptsVisit = 1; }
       await updateGlobalScore(localScore + ptsLocal, visitorScore + ptsVisit);
       addToast({ type: 'success', message: `Set finalizado: ${winner}` });
-      loadSets();
-    } catch { addToast({ type: 'error', message: 'Error al finalizar set' }); }
+      await loadSets();
+    } catch { addToast({ type: 'error', message: 'Error al finalizar set' }); } finally { setIsSaving(false); }
   };
+  const finishSet = debounce(finishSetInternal, 'finishSet');
 
-  const deleteSet = async (setId: string) => { if (!window.confirm('¿Eliminar este set?')) return; try { await deleteSetApi(setId); addToast({ type: 'success', message: 'Set eliminado' }); loadSets(); } catch { addToast({ type: 'error', message: 'Error al eliminar set' }); } };
-  const reopenSet = async (setId: string) => { if (!window.confirm('¿Reabrir este set?')) return; try { await reopenSetApi(setId); addToast({ type: 'success', message: 'Set reabierto' }); loadSets(); } catch { addToast({ type: 'error', message: 'Error al reabrir set' }); } };
-  const changeSetWinner = async (setId: string, newWinner: 'local' | 'visitante' | 'empate') => { try { await changeWinnerApi(setId, newWinner); addToast({ type: 'success', message: 'Ganador actualizado' }); loadSets(); } catch { addToast({ type: 'error', message: 'Error al actualizar ganador' }); } };
+  const deleteSetInternal = async (setId: string) => { if (!window.confirm('¿Eliminar este set?')) return; setIsSaving(true); try { await deleteSetApi(setId); addToast({ type: 'success', message: 'Set eliminado' }); await loadSets(); } catch { addToast({ type: 'error', message: 'Error al eliminar set' }); } finally { setIsSaving(false); } };
+  const deleteSet = debounce(deleteSetInternal, 'deleteSet');
+  
+  const reopenSetInternal = async (setId: string) => { if (!window.confirm('¿Reabrir este set?')) return; setIsSaving(true); try { await reopenSetApi(setId); addToast({ type: 'success', message: 'Set reabierto' }); await loadSets(); } catch { addToast({ type: 'error', message: 'Error al reabrir set' }); } finally { setIsSaving(false); } };
+  const reopenSet = debounce(reopenSetInternal, 'reopenSet');
+  
+  const changeSetWinnerInternal = async (setId: string, newWinner: 'local' | 'visitante' | 'empate') => { setIsSaving(true); try { await changeWinnerApi(setId, newWinner); addToast({ type: 'success', message: 'Ganador actualizado' }); await loadSets(); } catch { addToast({ type: 'error', message: 'Error al actualizar ganador' }); } finally { setIsSaving(false); } };
+  const changeSetWinner = debounce(changeSetWinnerInternal, 'changeSetWinner');
 
   const pauseMatch = (reason: 'TIMEOUT' | 'REVIEW' | 'GENERIC', team?: 'local' | 'visitante') => {
     controllerActions?.pauseAll();
@@ -231,7 +282,14 @@ export const ControlPage: React.FC = () => {
     socket.emit('overlay:config', { matchId, showSetTimer: enabled });
   };
 
-  if (!matchData) return <div className="p-8 text-center">Cargando partido...</div>;
+  if (!matchData || isLoading) return (
+    <div className="h-screen flex items-center justify-center bg-slate-50">
+      <div className="flex flex-col items-center gap-2">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <span className="text-slate-500 text-sm">Cargando partido...</span>
+      </div>
+    </div>
+  );
   const currentSet = sets.find(s => s.estadoSet === 'en_juego');
 
   return (
@@ -241,7 +299,15 @@ export const ControlPage: React.FC = () => {
           <button onClick={() => navigate('/config')} className="text-slate-400 hover:text-slate-600" aria-label="Volver"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg></button>
           <div className="flex items-baseline gap-2"><h1 className="text-sm font-bold text-slate-800">Mesa de Control</h1><p className="text-xs text-slate-500 hidden sm:block">{matchData.equipoLocal?.nombre} vs {matchData.equipoVisitante?.nombre}</p></div>
         </div>
-        <div className="flex items-center gap-2"><div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} title={isConnected ? 'Conectado' : 'Desconectado'} /></div>
+        <div className="flex items-center gap-2">
+          {isSaving && (
+            <div className="flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded animate-pulse">
+              <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              <span>Guardando...</span>
+            </div>
+          )}
+          <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} title={isConnected ? 'Conectado' : 'Desconectado'} />
+        </div>
       </header>
       <main className="flex-1 p-2 overflow-y-auto overflow-x-hidden bg-slate-100">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-2 max-w-7xl mx-auto pb-20">
@@ -328,13 +394,13 @@ export const ControlPage: React.FC = () => {
                       </div>
                     </div>
                     <div className={`flex-1 grid ${matchData.modalidad === 'Cloth' ? 'grid-rows-3' : 'grid-rows-2'} gap-2`}>
-                      <button onClick={() => finishSet(currentSet._id, 'local')} className="bg-blue-600 text-white rounded-lg font-bold text-lg hover:bg-blue-700 transition shadow-sm flex flex-col items-center justify-center"><span>{matchData.equipoLocal?.nombre}</span><span className="text-xs font-normal opacity-75">+{matchData.modalidad === 'Cloth' ? '2' : '1'} Pts</span></button>
-                      <button onClick={() => finishSet(currentSet._id, 'visitante')} className="bg-red-600 text-white rounded-lg font-bold text-lg hover:bg-red-700 transition shadow-sm flex flex-col items-center justify-center"><span>{matchData.equipoVisitante?.nombre}</span><span className="text-xs font-normal opacity-75">+{matchData.modalidad === 'Cloth' ? '2' : '1'} Pts</span></button>
-                      {matchData.modalidad === 'Cloth' && <button onClick={() => finishSet(currentSet._id, 'empate')} className="bg-slate-600 text-white rounded-lg font-bold text-lg hover:bg-slate-700 transition shadow-sm flex flex-col items-center justify-center"><span>Empate</span><span className="text-xs font-normal opacity-75">+1 Pt c/u</span></button>}
+                      <button onClick={() => finishSet(currentSet._id, 'local')} disabled={isSaving} className={`bg-blue-600 text-white rounded-lg font-bold text-lg hover:bg-blue-700 transition shadow-sm flex flex-col items-center justify-center ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><span>{matchData.equipoLocal?.nombre}</span><span className="text-xs font-normal opacity-75">+{matchData.modalidad === 'Cloth' ? '2' : '1'} Pts</span></button>
+                      <button onClick={() => finishSet(currentSet._id, 'visitante')} disabled={isSaving} className={`bg-red-600 text-white rounded-lg font-bold text-lg hover:bg-red-700 transition shadow-sm flex flex-col items-center justify-center ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><span>{matchData.equipoVisitante?.nombre}</span><span className="text-xs font-normal opacity-75">+{matchData.modalidad === 'Cloth' ? '2' : '1'} Pts</span></button>
+                      {matchData.modalidad === 'Cloth' && <button onClick={() => finishSet(currentSet._id, 'empate')} disabled={isSaving} className={`bg-slate-600 text-white rounded-lg font-bold text-lg hover:bg-slate-700 transition shadow-sm flex flex-col items-center justify-center ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><span>Empate</span><span className="text-xs font-normal opacity-75">+1 Pt c/u</span></button>}
                     </div>
                   </div>
                 ) : (
-                  <button onClick={() => startNewSet(false)} className="w-full h-full bg-green-600 text-white rounded-lg font-bold text-xl hover:bg-green-700 shadow-sm flex flex-col items-center justify-center gap-2"><svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664l-3-2z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>Iniciar Set {sets.length + 1}</span></button>
+                  <button onClick={() => startNewSet(false)} disabled={isSaving} className={`w-full h-full bg-green-600 text-white rounded-lg font-bold text-xl hover:bg-green-700 shadow-sm flex flex-col items-center justify-center gap-2 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664l-3-2z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>Iniciar Set {sets.length + 1}</span></button>
                 )}
               </div>
               {currentSet && !isSetRunning && !isSuddenDeathActive && isMatchRunning && (
