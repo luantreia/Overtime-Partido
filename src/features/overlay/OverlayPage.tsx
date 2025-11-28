@@ -263,10 +263,10 @@ export const OverlayPage = () => {
   // `showVideo` computed from query params above
 
   return (
-    <div className={`w-screen h-screen overflow-hidden relative font-sans ${transparent || !showVideo ? 'bg-transparent' : 'bg-black'}`}>
+    <div className={`w-screen h-screen overflow-hidden relative font-sans ${!activeSlot || transparent || !showVideo ? 'bg-transparent' : 'bg-black'}`}>
       
-      {/* VIDEO LAYER - Only shown when not in transparent mode */}
-      {showVideo && (
+      {/* VIDEO LAYER - Only shown when showVideo is true AND there's an activeSlot */}
+      {showVideo && activeSlot && (
         <div className="absolute inset-0 z-0">
           <video
             ref={videoRef}
@@ -275,19 +275,6 @@ export const OverlayPage = () => {
             muted={true}
             className="w-full h-full object-contain"
           />
-          
-          {/* No camera placeholder - only show if no streams available */}
-          {streams.size === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
-              <div className="text-center text-gray-500">
-                <svg className="w-24 h-24 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-                <p className="text-xl">Esperando cámara...</p>
-                <p className="text-sm mt-2">Selecciona una cámara en el Broadcast Control</p>
-              </div>
-            </div>
-          )}
         </div>
       )}
 
