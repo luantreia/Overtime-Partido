@@ -365,6 +365,12 @@ export function useWebRTCCamera({
       const pc = peerConnectionRef.current;
       if (!pc) return;
 
+      // Ignore if already connected (happens with multiple compositors)
+      if (pc.signalingState === 'stable') {
+        console.log('Ignoring duplicate answer - already connected');
+        return;
+      }
+
       try {
         await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
         
@@ -406,6 +412,13 @@ export function useWebRTCCamera({
     const handleNewSourceRequest = (data?: { matchId: string; slot: CameraSlot }) => {
       // If data provided, check it matches our camera
       if (data && (data.matchId !== matchId || data.slot !== slot)) return;
+      
+      // Don't create new connection if already connected
+      const pc = peerConnectionRef.current;
+      if (pc && (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed')) {
+        console.log('Ignoring offer request - already connected');
+        return;
+      }
       
       console.log('Compositor requested offer, localStream:', !!localStream);
       if (localStream) {
