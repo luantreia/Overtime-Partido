@@ -30,6 +30,7 @@ export const BroadcastPage = () => {
   const [isSocketConnected, setIsSocketConnected] = useState(socket.connected);
   const [matchData, setMatchData] = useState<any>(null);
   const [showOverlay, setShowOverlay] = useState(true);
+  const [showVideo, setShowVideo] = useState(true);
   const [copiedSlot, setCopiedSlot] = useState<string | null>(null);
   
   const programVideoRef = useRef<HTMLVideoElement>(null);
@@ -257,23 +258,40 @@ export const BroadcastPage = () => {
                 </div>
               )}
             </div>
-            <button
-              onClick={() => setShowOverlay(!showOverlay)}
-              className={`px-2 py-1 rounded text-xs ${showOverlay ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'}`}
-            >
-              Overlay {showOverlay ? 'ON' : 'OFF'}
-            </button>
+            <div className="flex items-center gap-2">
+              <label className="flex items-center gap-2 text-xs">
+                <input
+                  type="checkbox"
+                  checked={showVideo}
+                  onChange={(e) => setShowVideo(e.target.checked)}
+                  className="w-4 h-4"
+                />
+                <span className="text-slate-400">Show Video</span>
+              </label>
+              <button
+                onClick={() => setShowOverlay(!showOverlay)}
+                className={`px-2 py-1 rounded text-xs ${showOverlay ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'}`}
+              >
+                Overlay {showOverlay ? 'ON' : 'OFF'}
+              </button>
+            </div>
           </div>
 
           {/* Program monitor */}
           <div className="flex-1 relative bg-black rounded-lg overflow-hidden">
-            <video
-              ref={programVideoRef}
-              autoPlay
-              playsInline
-              muted={false}
-              className="w-full h-full object-contain"
-            />
+            {showVideo ? (
+              <video
+                ref={programVideoRef}
+                autoPlay
+                playsInline
+                muted={false}
+                className="w-full h-full object-contain"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-slate-900">
+                <div className="text-slate-500">Video oculto (showVideo=false)</div>
+              </div>
+            )}
 
             {/* No active camera */}
             {!activeSlot && (
@@ -291,7 +309,7 @@ export const BroadcastPage = () => {
             {/* Overlay iframe */}
             {showOverlay && (
               <iframe
-                src={`/overlay?matchId=${matchId}&transparent=true`}
+                src={`/overlay?matchId=${matchId}&transparent=${!showVideo}&showVideo=${showVideo}`}
                 className="absolute inset-0 w-full h-full pointer-events-none"
                 style={{ border: 'none' }}
                 title="Overlay"

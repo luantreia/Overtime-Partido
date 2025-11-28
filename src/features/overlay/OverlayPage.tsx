@@ -10,6 +10,9 @@ export const OverlayPage = () => {
   const [searchParams] = useSearchParams();
   const matchId = searchParams.get('matchId');
   const transparent = searchParams.get('transparent') === 'true';
+  const showVideoParam = searchParams.get('showVideo');
+  // showVideo explicit param if provided, otherwise inverse of transparent
+  const showVideo = showVideoParam !== null ? showVideoParam === 'true' : !transparent;
 
   const [score, setScore] = useState({ local: 0, visitor: 0 });
   const [activeOverlay, setActiveOverlay] = useState<{type: string, payload?: any} | null>(null);
@@ -24,22 +27,22 @@ export const OverlayPage = () => {
   // Video ref for active camera
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // WebRTC compositor hook - only active if not in transparent mode (for OBS Browser Source)
+  // WebRTC compositor hook - only active if showVideo is true (for OBS Browser Source)
   const {
     streams,
     activeSlot,
     requestState,
   } = useWebRTCCompositor({
-    socket: !transparent && isSocketConnected ? socket : null,
+    socket: showVideo && isSocketConnected ? socket : null,
     matchId: matchId || ''
   });
 
   // Update video when active camera changes
   useEffect(() => {
-    console.log('[Overlay] Video update effect:', { activeSlot, transparent, streamsSize: streams.size, hasVideoRef: !!videoRef.current });
+    console.log('[Overlay] Video update effect:', { activeSlot, showVideo, streamsSize: streams.size, hasVideoRef: !!videoRef.current });
     
-    if (videoRef.current && !transparent) {
-      // Use activeSlot if set, otherwise use first available stream
+    if (videoRef.current && showVideo) {
+      // Use activeSlot if set, otherwise use first available stream (fallback only when showVideo is true)
       let stream: MediaStream | undefined;
       
       if (activeSlot) {
@@ -60,7 +63,7 @@ export const OverlayPage = () => {
     } else if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
-  }, [activeSlot, streams, transparent]);
+  }, [activeSlot, streams, showVideo]);
 
   // Track socket connection
   useEffect(() => {
@@ -257,7 +260,7 @@ export const OverlayPage = () => {
   if (!matchData) return <div className="text-white p-10 bg-gray-800">Cargando datos del partido...</div>;
 
   // Determine background: transparent for OBS layer, black with video for full stream
-  const showVideo = !transparent;
+  // `showVideo` computed from query params above
 
   return (
     <div className={`w-screen h-screen overflow-hidden relative font-sans ${transparent ? 'bg-transparent' : 'bg-black'}`}>
