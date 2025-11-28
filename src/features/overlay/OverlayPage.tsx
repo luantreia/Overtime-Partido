@@ -263,7 +263,7 @@ export const OverlayPage = () => {
   // `showVideo` computed from query params above
 
   return (
-    <div className={`w-screen h-screen overflow-hidden relative font-sans ${transparent ? 'bg-transparent' : 'bg-black'}`}>
+    <div className={`w-screen h-screen overflow-hidden relative font-sans ${transparent || !showVideo ? 'bg-transparent' : 'bg-black'}`}>
       
       {/* VIDEO LAYER - Only shown when not in transparent mode */}
       {showVideo && (
