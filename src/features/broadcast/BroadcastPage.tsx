@@ -57,14 +57,58 @@ export const BroadcastPage = () => {
 
     const handleInitViewer = async (data: { viewerSocketId: string; matchId: string }) => {
       const { viewerSocketId } = data;
-      if (!programVideoRef.current) return;
-      console.log('[Broadcast] init viewer', { viewerSocketId, matchId, activeSlot });
+      console.log('[Broadcast] init viewer (requested)', { viewerSocketId, matchId, activeSlot });
+      if (!programVideoRef.current) {
+        console.warn('[Broadcast] no programVideo element available yet');
+        return;
+      }
 
-      const programStream = programVideoRef.current.captureStream();
-      const tracks = programStream.getTracks();
-      console.log('[Broadcast] program stream captured', { tracksCount: tracks.length, trackKinds: tracks.map(t => t.kind) });
+      // Wait for programVideo to have a srcObject with tracks (retries)
+      const waitForTracks = async (maxAttempts = 6, delay = 200) => {
+        for (let i = 0; i < maxAttempts; i++) {
+          const videoEl = programVideoRef.current;
+          if (videoEl && videoEl.srcObject) {
+            const ms = videoEl.srcObject as MediaStream;
+            const tracks = ms.getTracks();
+            if (tracks.length > 0) return ms;
+          }
+          await new Promise(res => setTimeout(res, delay));
+        }
+        return null;
+      };
 
-      const pc = new RTCPeerConnection({ iceServers: [] });
+      const programStream = await waitForTracks(6, 250);
+      if (!programStream) {
+        console.warn('[Broadcast] captureStream unavailable or no tracks after retries - aborting init viewer', { viewerSocketId });
+        return;
+      }
+
+      // Defensive: try-catch around captureStream fallback
+      let capturedStream: MediaStream | null = null;
+      try {
+        // Some browsers allow captureStream directly on the element, but if srcObject exists we reuse it
+        capturedStream = programStream;
+      } catch (e) {
+        console.warn('[Broadcast] captureStream failed, attempting fallback', e);
+        try {
+          capturedStream = (programVideoRef.current as any).captureStream();
+        } catch (err) {
+          console.error('[Broadcast] captureStream fallback failed', err);
+          capturedStream = null;
+        }
+      }
+
+      if (!capturedStream) {
+        console.warn('[Broadcast] No media available for program stream, aborting');
+        return;
+      }
+
+      const tracks = capturedStream.getTracks();
+      console.log('[Broadcast] program stream ready', { tracksCount: tracks.length, trackKinds: tracks.map(t => t.kind) });
+
+      // Use a default STUN server to improve connectivity if no other config is present
+      const defaultIce = [{ urls: 'stun:stun.l.google.com:19302' }];
+      const pc = new RTCPeerConnection({ iceServers: defaultIce });
       console.log('[Broadcast] created program PC for viewer', viewerSocketId);
 
       // state tracing
@@ -74,7 +118,7 @@ export const BroadcastPage = () => {
 
       // add tracks
       for (const track of tracks) {
-        pc.addTrack(track, programStream);
+        pc.addTrack(track, capturedStream);
         console.log('[Broadcast] added track to PC', { viewerSocketId, kind: track.kind, id: track.id });
       }
 
@@ -114,10 +158,14 @@ export const BroadcastPage = () => {
     const handleProgramIce = (data: any) => {
       const { fromSocketId, candidate } = data;
       console.log('[Broadcast] program ICE received', { fromSocketId, candidate });
-      for (const [viewerId, pc] of programPCsRef.current.entries()) {
+      // Add candidate only to the PC belonging to the originating viewer
+      const pc = programPCsRef.current.get(fromSocketId);
+      if (pc) {
         pc.addIceCandidate(new RTCIceCandidate(candidate)).then(() => {
-          console.log('[Broadcast] added ICE candidate to PC', viewerId);
-        }).catch(e => console.warn('[Broadcast] failed adding ICE to PC', viewerId, e));
+          console.log('[Broadcast] added ICE candidate to PC', fromSocketId);
+        }).catch((e: any) => console.warn('[Broadcast] failed adding ICE to PC', fromSocketId, e));
+      } else {
+        console.warn('[Broadcast] No PC found for program ICE from', fromSocketId);
       }
     };
 
@@ -130,10 +178,10 @@ export const BroadcastPage = () => {
       socket.off('program:answer', handleProgramAnswer);
       socket.off('program:ice', handleProgramIce);
       // cleanup pcs
-      for (const [viewerId, pc] of programPCsRef.current.entries()) {
+      programPCsRef.current.forEach((pc, viewerId) => {
         console.log('[Broadcast] closing PC for viewer', viewerId);
         try { pc.close(); } catch (e) {}
-      }
+      });
       programPCsRef.current.clear();
     };
   }, [socket, matchId]);
@@ -196,6 +244,15 @@ export const BroadcastPage = () => {
       console.log('[Broadcast] activeSlot changed', { activeSlot, hasStream: !!stream });
       if (stream) {
         programVideoRef.current.srcObject = stream;
+        // Ensure program monitor can autoplay by muting it and attempting play
+        try {
+          programVideoRef.current.muted = true;
+          programVideoRef.current.play().then(() => {
+            console.log('[Broadcast] programVideo playing');
+          }).catch((e) => console.warn('[Broadcast] programVideo play failed', e));
+        } catch (e) {
+          console.warn('[Broadcast] Error forcing play on programVideo', e);
+        }
         console.log('[Broadcast] programVideo srcObject set', { tracks: stream.getTracks().map(t => ({ id: t.id, kind: t.kind })) });
       }
     } else if (programVideoRef.current) {
