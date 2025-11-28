@@ -56,12 +56,54 @@ export const OverlayPage = () => {
       
       if (stream) {
         videoRef.current.srcObject = stream;
-        videoRef.current.play().catch(e => console.log('[Overlay] Video play error:', e));
+
+        // Try to play with retries to handle autoplay policies or transient failures
+        let cancelled = false;
+
+        const tryPlay = (attempts = 3, delay = 300) => {
+          if (cancelled || !videoRef.current) return;
+          videoRef.current.play().then(() => {
+            console.log('[Overlay] Video playing');
+          }).catch((err) => {
+            console.warn(`[Overlay] Video play failed (attempts=${attempts}):`, err);
+            if (attempts > 0) {
+              setTimeout(() => tryPlay(attempts - 1, Math.round(delay * 1.5)), delay);
+            } else {
+              console.error('[Overlay] Video play final failure:', err);
+            }
+          });
+        };
+
+        tryPlay(3, 300);
+
+        // cleanup for this effect invocation
+        return () => {
+          cancelled = true;
+          try {
+            if (videoRef.current) {
+              videoRef.current.pause();
+              videoRef.current.srcObject = null;
+            }
+          } catch (e) {
+            // ignore
+          }
+        };
       } else {
-        videoRef.current.srcObject = null;
+        // No stream available: ensure video cleared
+        try {
+          videoRef.current.srcObject = null;
+          videoRef.current.pause();
+        } catch (e) {
+          // ignore
+        }
       }
     } else if (videoRef.current) {
-      videoRef.current.srcObject = null;
+      try {
+        videoRef.current.srcObject = null;
+        videoRef.current.pause();
+      } catch (e) {
+        // ignore
+      }
     }
   }, [activeSlot, streams, showVideo]);
 
