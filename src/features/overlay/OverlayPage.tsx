@@ -4,7 +4,6 @@ import { socket } from '../../services/socket';
 import { authFetch } from '../../shared/utils/authFetch';
 import OverlayScoreboard from './OverlayScoreboard';
 import { useDriftFreeTimers } from '../../shared/hooks/useDriftFreeTimers';
-import { useWebRTCCompositor } from '../../shared/hooks/useWebRTCCompositor';
 
 export const OverlayPage = () => {
   const [searchParams] = useSearchParams();
@@ -24,88 +23,67 @@ export const OverlayPage = () => {
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [isDataFlowing, setIsDataFlowing] = useState(false);
   
-  // Video ref for active camera
+  // Video ref for program stream
   const videoRef = useRef<HTMLVideoElement>(null);
+  const programPcRef = useRef<RTCPeerConnection | null>(null);
 
-  // WebRTC compositor hook - only active if showVideo is true (for OBS Browser Source)
-  const {
-    streams,
-    activeSlot,
-    requestState,
-  } = useWebRTCCompositor({
-    socket: showVideo && isSocketConnected ? socket : null,
-    matchId: matchId || ''
-  });
-
-  // Update video when active camera changes
+  // PROGRAM VIEWER: request the composed program stream from the compositor
   useEffect(() => {
-    console.log('[Overlay] Video update effect:', { activeSlot, showVideo, streamsSize: streams.size, hasVideoRef: !!videoRef.current });
-    
-    if (videoRef.current && showVideo) {
-      // Use activeSlot if set, otherwise use first available stream (fallback only when showVideo is true)
-      let stream: MediaStream | undefined;
-      
-      if (activeSlot) {
-        stream = streams.get(activeSlot);
-      } else if (streams.size > 0) {
-        // Fallback: use first available stream
-        stream = streams.values().next().value;
-      }
-      
-      console.log('[Overlay] Stream to display:', stream ? `${stream.getTracks().length} tracks` : 'null');
-      
-      if (stream) {
-        videoRef.current.srcObject = stream;
+    if (!showVideo || !isSocketConnected || !matchId) return;
 
-        // Try to play with retries to handle autoplay policies or transient failures
-        let cancelled = false;
+    // Ask server to connect us to the program stream
+    socket.emit('program:viewer_join', { matchId });
 
-        const tryPlay = (attempts = 3, delay = 300) => {
-          if (cancelled || !videoRef.current) return;
-          videoRef.current.play().then(() => {
-            console.log('[Overlay] Video playing');
-          }).catch((err) => {
-            console.warn(`[Overlay] Video play failed (attempts=${attempts}):`, err);
-            if (attempts > 0) {
-              setTimeout(() => tryPlay(attempts - 1, Math.round(delay * 1.5)), delay);
-            } else {
-              console.error('[Overlay] Video play final failure:', err);
-            }
-          });
-        };
+    const handleOffer = async (data: any) => {
+      const { sdp, compositorSocketId } = data;
+      try {
+        const pc = new RTCPeerConnection({ iceServers: [] });
+        programPcRef.current = pc;
 
-        tryPlay(3, 300);
-
-        // cleanup for this effect invocation
-        return () => {
-          cancelled = true;
-          try {
-            if (videoRef.current) {
-              videoRef.current.pause();
-              videoRef.current.srcObject = null;
-            }
-          } catch (e) {
-            // ignore
+        pc.ontrack = (event) => {
+          if (videoRef.current) {
+            videoRef.current.srcObject = event.streams[0];
+            videoRef.current.play().catch((e) => console.warn('[Overlay] play error on track:', e));
           }
         };
-      } else {
-        // No stream available: ensure video cleared
-        try {
-          videoRef.current.srcObject = null;
-          videoRef.current.pause();
-        } catch (e) {
-          // ignore
-        }
+
+        pc.onicecandidate = (ev) => {
+          if (ev.candidate) {
+            socket.emit('program:ice', { targetSocketId: compositorSocketId, matchId, candidate: ev.candidate.toJSON() });
+          }
+        };
+
+        await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        socket.emit('program:answer', { compositorSocketId, matchId, sdp: pc.localDescription });
+      } catch (err) {
+        console.error('[Overlay] Failed to handle program offer', err);
       }
-    } else if (videoRef.current) {
-      try {
-        videoRef.current.srcObject = null;
-        videoRef.current.pause();
-      } catch (e) {
-        // ignore
+    };
+
+    const handleProgramIce = (data: any) => {
+      const { candidate } = data;
+      if (programPcRef.current && candidate) {
+        programPcRef.current.addIceCandidate(new RTCIceCandidate(candidate)).catch(e => {});
       }
-    }
-  }, [activeSlot, streams, showVideo]);
+    };
+
+    socket.on('program:offer', handleOffer);
+    socket.on('program:ice', handleProgramIce);
+
+    return () => {
+      socket.off('program:offer', handleOffer);
+      socket.off('program:ice', handleProgramIce);
+      if (programPcRef.current) {
+        try { programPcRef.current.close(); } catch (e) {}
+        programPcRef.current = null;
+      }
+      if (videoRef.current) {
+        try { videoRef.current.pause(); videoRef.current.srcObject = null; } catch (e) {}
+      }
+    };
+  }, [showVideo, isSocketConnected, matchId]);
 
   // Track socket connection
   useEffect(() => {
@@ -125,24 +103,7 @@ export const OverlayPage = () => {
     };
   }, []);
 
-  // Request camera state when compositor socket is ready
-  useEffect(() => {
-    if (!transparent && isSocketConnected && matchId) {
-      // Initial state request
-      requestState?.();
-      // Retry a couple times if no streams yet
-      const t1 = setTimeout(() => {
-        if (streams.size === 0) requestState?.();
-      }, 1000);
-      const t2 = setTimeout(() => {
-        if (streams.size === 0) requestState?.();
-      }, 3000);
-      return () => {
-        clearTimeout(t1);
-        clearTimeout(t2);
-      };
-    }
-  }, [transparent, isSocketConnected, matchId, requestState, streams.size]);
+  // (Removed compositor state polling - overlay now requests program stream when needed)
 
   // Watchdog: Request sync if no data received for 2 seconds (Aggressive recovery)
   useEffect(() => {
@@ -305,10 +266,10 @@ export const OverlayPage = () => {
   // `showVideo` computed from query params above
 
   return (
-    <div className={`w-screen h-screen overflow-hidden relative font-sans ${!activeSlot || transparent || !showVideo ? 'bg-transparent' : 'bg-black'}`}>
+    <div className={`w-screen h-screen overflow-hidden relative font-sans ${(transparent || !showVideo) ? 'bg-transparent' : 'bg-black'}`}>
       
-      {/* VIDEO LAYER - Only shown when showVideo is true AND there's an activeSlot */}
-      {showVideo && activeSlot && (
+      {/* VIDEO LAYER - Only shown when showVideo is true */}
+      {showVideo && (
         <div className="absolute inset-0 z-0">
           <video
             ref={videoRef}

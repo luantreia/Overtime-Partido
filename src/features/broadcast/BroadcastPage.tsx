@@ -49,6 +49,72 @@ export const BroadcastPage = () => {
     matchId: matchId || ''
   });
 
+  // Program stream peer connections for viewers
+  const programPCsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleInitViewer = async (data: { viewerSocketId: string; matchId: string }) => {
+      const { viewerSocketId } = data;
+      if (!programVideoRef.current) return;
+
+      const programStream = programVideoRef.current.captureStream();
+
+      const pc = new RTCPeerConnection({ iceServers: [] });
+      // add tracks
+      for (const track of programStream.getTracks()) {
+        pc.addTrack(track, programStream);
+      }
+
+      pc.onicecandidate = (event) => {
+        if (event.candidate) {
+          socket.emit('program:ice', { targetSocketId: viewerSocketId, matchId, candidate: event.candidate.toJSON() });
+        }
+      };
+
+      // create offer
+      try {
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        socket.emit('program:offer', { viewerSocketId, matchId, sdp: pc.localDescription });
+        programPCsRef.current.set(viewerSocketId, pc);
+      } catch (err) {
+        console.error('[Broadcast] Failed to create/send program offer', err);
+        pc.close();
+      }
+    };
+
+    const handleProgramAnswer = (data: any) => {
+      const { viewerSocketId, sdp } = data; // viewerSocketId corresponds to viewer that answered
+      const pc = programPCsRef.current.get(viewerSocketId);
+      if (!pc) return;
+      pc.setRemoteDescription(new RTCSessionDescription(sdp)).catch(err => console.error('[Broadcast] setRemoteDescription failed', err));
+    };
+
+    const handleProgramIce = (data: any) => {
+      const { fromSocketId, candidate } = data;
+      // We don't know viewer id here; the compositor receives ice from viewer via server relaying to compositor socket.
+      // For simplicity, try to add to all PCs
+      for (const pc of programPCsRef.current.values()) {
+        pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(e => {});
+      }
+    };
+
+    socket.on('program:init_viewer', handleInitViewer);
+    socket.on('program:answer', handleProgramAnswer);
+    socket.on('program:ice', handleProgramIce);
+
+    return () => {
+      socket.off('program:init_viewer', handleInitViewer);
+      socket.off('program:answer', handleProgramAnswer);
+      socket.off('program:ice', handleProgramIce);
+      // cleanup pcs
+      programPCsRef.current.forEach(pc => pc.close());
+      programPCsRef.current.clear();
+    };
+  }, [socket, matchId]);
+
   // Socket connection
   useEffect(() => {
     if (!matchId) {
