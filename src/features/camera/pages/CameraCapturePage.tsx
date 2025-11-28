@@ -14,7 +14,7 @@
  * - Local preview
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { socket } from '../../../services/socket';
 import { useWebRTCCamera, CaptureSource } from '../../../shared/hooks/useWebRTCCamera';
@@ -31,6 +31,7 @@ export const CameraCapturePage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [isSocketConnected, setIsSocketConnected] = useState(socket.connected);
   const [showSourcePicker, setShowSourcePicker] = useState(true);
+  const [isPortrait, setIsPortrait] = useState(false);
 
   // Check if source is specified in URL (e.g., ?source=screen)
   const urlSource = searchParams.get('source') as CaptureSource | null;
@@ -81,6 +82,30 @@ export const CameraCapturePage: React.FC = () => {
       socket.off('disconnect', handleDisconnect);
     };
   }, []);
+
+  // Detect device orientation
+  useEffect(() => {
+    const checkOrientation = () => {
+      // Only check on mobile devices (not screen sharing)
+      if (captureSource === 'screen') {
+        setIsPortrait(false);
+        return;
+      }
+      
+      // Check window dimensions
+      const portrait = window.innerHeight > window.innerWidth;
+      setIsPortrait(portrait);
+    };
+
+    checkOrientation();
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+
+    return () => {
+      window.removeEventListener('resize', checkOrientation);
+      window.removeEventListener('orientationchange', checkOrientation);
+    };
+  }, [captureSource]);
 
   // Auto-start capture ONLY when URL has source param
   useEffect(() => {
@@ -276,6 +301,29 @@ export const CameraCapturePage: React.FC = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
               </svg>
               <p>Iniciando cámara...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Portrait orientation warning */}
+        {isPortrait && localStream && captureSource === 'camera' && (
+          <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-20 p-6">
+            <div className="text-center text-white">
+              <div className="mb-4 animate-pulse">
+                <svg className="w-20 h-20 mx-auto transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold mb-2">📱 Gira tu dispositivo</h3>
+              <p className="text-gray-300 text-sm">
+                Coloca el celular en posición horizontal para una mejor transmisión
+              </p>
+              <div className="mt-4 flex items-center justify-center gap-2 text-yellow-400 text-xs">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                La transmisión continúa en segundo plano
+              </div>
             </div>
           </div>
         )}
