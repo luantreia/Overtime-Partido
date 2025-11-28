@@ -32,30 +32,42 @@ export const OverlayPage = () => {
     if (!showVideo || !isSocketConnected || !matchId) return;
 
     // Ask server to connect us to the program stream
+    console.log('[Overlay] requesting program viewer join', { matchId });
     socket.emit('program:viewer_join', { matchId });
 
     const handleOffer = async (data: any) => {
       const { sdp, compositorSocketId } = data;
+      console.log('[Overlay] program:offer received', { compositorSocketId, sdpType: sdp?.type, sdpLen: sdp?.sdp?.length });
       try {
         const pc = new RTCPeerConnection({ iceServers: [] });
         programPcRef.current = pc;
 
         pc.ontrack = (event) => {
+          console.log('[Overlay][PC] ontrack', { streams: event.streams.length, tracks: event.streams[0]?.getTracks().map((t: any) => ({ id: t.id, kind: t.kind })) });
           if (videoRef.current) {
             videoRef.current.srcObject = event.streams[0];
-            videoRef.current.play().catch((e) => console.warn('[Overlay] play error on track:', e));
+            videoRef.current.play().then(() => {
+              console.log('[Overlay] video play OK on track');
+            }).catch((e) => console.warn('[Overlay] play error on track:', e));
           }
         };
 
         pc.onicecandidate = (ev) => {
           if (ev.candidate) {
+            console.log('[Overlay][PC] sending ICE to compositor', ev.candidate);
             socket.emit('program:ice', { targetSocketId: compositorSocketId, matchId, candidate: ev.candidate.toJSON() });
           }
         };
 
+        pc.onconnectionstatechange = () => console.log('[Overlay][PC] connectionState', pc.connectionState);
+        pc.oniceconnectionstatechange = () => console.log('[Overlay][PC] iceConnectionState', pc.iceConnectionState);
+        pc.onsignalingstatechange = () => console.log('[Overlay][PC] signalingState', pc.signalingState);
+
         await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+        console.log('[Overlay] setRemoteDescription OK');
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
+        console.log('[Overlay] created local answer', { type: pc.localDescription?.type, sdpLen: pc.localDescription?.sdp?.length });
         socket.emit('program:answer', { compositorSocketId, matchId, sdp: pc.localDescription });
       } catch (err) {
         console.error('[Overlay] Failed to handle program offer', err);
@@ -64,8 +76,11 @@ export const OverlayPage = () => {
 
     const handleProgramIce = (data: any) => {
       const { candidate } = data;
+      console.log('[Overlay] program ICE received', { candidate });
       if (programPcRef.current && candidate) {
-        programPcRef.current.addIceCandidate(new RTCIceCandidate(candidate)).catch(e => {});
+        programPcRef.current.addIceCandidate(new RTCIceCandidate(candidate)).then(() => {
+          console.log('[Overlay] added ICE candidate');
+        }).catch(e => console.warn('[Overlay] addIceCandidate failed', e));
       }
     };
 
