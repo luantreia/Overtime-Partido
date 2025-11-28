@@ -28,6 +28,7 @@ export const OverlayPage = () => {
   const {
     streams,
     activeSlot,
+    requestState,
   } = useWebRTCCompositor({
     socket: !transparent && isSocketConnected ? socket : null,
     matchId: matchId || ''
@@ -78,6 +79,25 @@ export const OverlayPage = () => {
       socket.off('disconnect', handleDisconnect);
     };
   }, []);
+
+  // Request camera state when compositor socket is ready
+  useEffect(() => {
+    if (!transparent && isSocketConnected && matchId) {
+      // Initial state request
+      requestState?.();
+      // Retry a couple times if no streams yet
+      const t1 = setTimeout(() => {
+        if (streams.size === 0) requestState?.();
+      }, 1000);
+      const t2 = setTimeout(() => {
+        if (streams.size === 0) requestState?.();
+      }, 3000);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
+    }
+  }, [transparent, isSocketConnected, matchId, requestState, streams.size]);
 
   // Watchdog: Request sync if no data received for 2 seconds (Aggressive recovery)
   useEffect(() => {
@@ -249,7 +269,7 @@ export const OverlayPage = () => {
             ref={videoRef}
             autoPlay
             playsInline
-            muted={false}
+            muted={true}
             className="w-full h-full object-contain"
           />
           
