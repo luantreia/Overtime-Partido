@@ -58,17 +58,29 @@ export const BroadcastPage = () => {
     const handleInitViewer = async (data: { viewerSocketId: string; matchId: string }) => {
       const { viewerSocketId } = data;
       if (!programVideoRef.current) return;
+      console.log('[Broadcast] init viewer', { viewerSocketId, matchId, activeSlot });
 
       const programStream = programVideoRef.current.captureStream();
+      const tracks = programStream.getTracks();
+      console.log('[Broadcast] program stream captured', { tracksCount: tracks.length, trackKinds: tracks.map(t => t.kind) });
 
       const pc = new RTCPeerConnection({ iceServers: [] });
+      console.log('[Broadcast] created program PC for viewer', viewerSocketId);
+
+      // state tracing
+      pc.onconnectionstatechange = () => console.log('[Broadcast][PC] connectionState', viewerSocketId, pc.connectionState);
+      pc.oniceconnectionstatechange = () => console.log('[Broadcast][PC] iceConnectionState', viewerSocketId, pc.iceConnectionState);
+      pc.onsignalingstatechange = () => console.log('[Broadcast][PC] signalingState', viewerSocketId, pc.signalingState);
+
       // add tracks
-      for (const track of programStream.getTracks()) {
+      for (const track of tracks) {
         pc.addTrack(track, programStream);
+        console.log('[Broadcast] added track to PC', { viewerSocketId, kind: track.kind, id: track.id });
       }
 
       pc.onicecandidate = (event) => {
         if (event.candidate) {
+          console.log('[Broadcast] sending program ICE to viewer', viewerSocketId, event.candidate);
           socket.emit('program:ice', { targetSocketId: viewerSocketId, matchId, candidate: event.candidate.toJSON() });
         }
       };
@@ -77,27 +89,35 @@ export const BroadcastPage = () => {
       try {
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
+        console.log('[Broadcast] created local offer for viewer', viewerSocketId, { type: pc.localDescription?.type, sdpLen: pc.localDescription?.sdp?.length });
         socket.emit('program:offer', { viewerSocketId, matchId, sdp: pc.localDescription });
         programPCsRef.current.set(viewerSocketId, pc);
       } catch (err) {
         console.error('[Broadcast] Failed to create/send program offer', err);
-        pc.close();
+        try { pc.close(); } catch(e){}
       }
     };
 
     const handleProgramAnswer = (data: any) => {
       const { viewerSocketId, sdp } = data; // viewerSocketId corresponds to viewer that answered
       const pc = programPCsRef.current.get(viewerSocketId);
-      if (!pc) return;
-      pc.setRemoteDescription(new RTCSessionDescription(sdp)).catch(err => console.error('[Broadcast] setRemoteDescription failed', err));
+      console.log('[Broadcast] program answer received', { viewerSocketId, hasPc: !!pc, sdpType: sdp?.type, sdpLen: sdp?.sdp?.length });
+      if (!pc) {
+        console.warn('[Broadcast] No PC found for program answer', viewerSocketId);
+        return;
+      }
+      pc.setRemoteDescription(new RTCSessionDescription(sdp)).then(() => {
+        console.log('[Broadcast] setRemoteDescription OK for viewer', viewerSocketId);
+      }).catch(err => console.error('[Broadcast] setRemoteDescription failed', err));
     };
 
     const handleProgramIce = (data: any) => {
       const { fromSocketId, candidate } = data;
-      // We don't know viewer id here; the compositor receives ice from viewer via server relaying to compositor socket.
-      // For simplicity, try to add to all PCs
-      for (const pc of programPCsRef.current.values()) {
-        pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(e => {});
+      console.log('[Broadcast] program ICE received', { fromSocketId, candidate });
+      for (const [viewerId, pc] of programPCsRef.current.entries()) {
+        pc.addIceCandidate(new RTCIceCandidate(candidate)).then(() => {
+          console.log('[Broadcast] added ICE candidate to PC', viewerId);
+        }).catch(e => console.warn('[Broadcast] failed adding ICE to PC', viewerId, e));
       }
     };
 
@@ -110,7 +130,10 @@ export const BroadcastPage = () => {
       socket.off('program:answer', handleProgramAnswer);
       socket.off('program:ice', handleProgramIce);
       // cleanup pcs
-      programPCsRef.current.forEach(pc => pc.close());
+      for (const [viewerId, pc] of programPCsRef.current.entries()) {
+        console.log('[Broadcast] closing PC for viewer', viewerId);
+        try { pc.close(); } catch (e) {}
+      }
       programPCsRef.current.clear();
     };
   }, [socket, matchId]);
@@ -170,11 +193,14 @@ export const BroadcastPage = () => {
   useEffect(() => {
     if (programVideoRef.current && activeSlot) {
       const stream = streams.get(activeSlot);
+      console.log('[Broadcast] activeSlot changed', { activeSlot, hasStream: !!stream });
       if (stream) {
         programVideoRef.current.srcObject = stream;
+        console.log('[Broadcast] programVideo srcObject set', { tracks: stream.getTracks().map(t => ({ id: t.id, kind: t.kind })) });
       }
     } else if (programVideoRef.current) {
       programVideoRef.current.srcObject = null;
+      console.log('[Broadcast] programVideo cleared (no activeSlot)');
     }
   }, [activeSlot, streams]);
 
