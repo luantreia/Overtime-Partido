@@ -300,14 +300,14 @@ export function useWebRTCCamera({
           setStatus('error');
           setIsConnected(false);
           socket?.emit('camera:status', { status: 'error' });
-          // Retry connection after 5 seconds
+          // Retry connection after 10 seconds
           if (!retryTimeoutRef.current) {
             retryTimeoutRef.current = setTimeout(() => {
               console.log('Retrying camera connection...');
               if (localStream) {
                 initiateConnection();
               }
-            }, 5000);
+            }, 10000);
           }
           break;
         case 'closed':
@@ -323,7 +323,12 @@ export function useWebRTCCamera({
 
   // Add local stream to peer connection and create offer
   const initiateConnection = useCallback(async () => {
-    if (!localStream || !socket) return;
+    if (!localStream || !socket) {
+      console.log('Cannot initiate connection: localStream=', !!localStream, 'socket=', !!socket);
+      return;
+    }
+
+    console.log('Initiating WebRTC connection...');
 
     // Clear pending candidates - they're from old connections
     pendingIceCandidatesRef.current = [];
@@ -340,6 +345,7 @@ export function useWebRTCCamera({
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
       
+      console.log('Sending camera offer to compositor');
       socket.emit('camera:offer', {
         matchId,
         slot,
@@ -362,6 +368,12 @@ export function useWebRTCCamera({
         console.log('Received ICE servers:', state.iceServers.length);
         iceServersRef.current = state.iceServers;
         setHasIceServers(true);
+        
+        // If we have a stream but are not connected, try to connect
+        if (localStream && !isConnected && status !== 'connecting') {
+          console.log('Received ICE servers, initiating connection as not connected');
+          initiateConnection();
+        }
       }
     };
 
