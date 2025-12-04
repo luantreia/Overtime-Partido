@@ -10,8 +10,8 @@ export const OverlayPage = () => {
   const matchId = searchParams.get('matchId');
   const transparent = searchParams.get('transparent') !== 'false';
   const showVideoParam = searchParams.get('showVideo');
-  // showVideo explicit param if provided, otherwise inverse of transparent
-  const showVideo = showVideoParam !== null ? showVideoParam === 'true' : !transparent;
+  // showVideo explicit param if provided, otherwise true (show video by default)
+  const showVideo = showVideoParam !== 'false';
 
   const [score, setScore] = useState({ local: 0, visitor: 0 });
   const [activeOverlay, setActiveOverlay] = useState<{type: string, payload?: any} | null>(null);
