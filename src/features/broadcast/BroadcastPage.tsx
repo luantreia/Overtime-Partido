@@ -601,12 +601,12 @@ export const BroadcastPage = () => {
                 </button>
               </label>
               <label className="flex items-center justify-between">
-                <span className="text-xs text-slate-300">Show Video</span>
+                <span className="text-xs text-slate-300">Overlay Preview</span>
                 <button
-                  onClick={() => setShowVideo(!showVideo)}
-                  className={`px-2 py-1 rounded text-xs ${showVideo ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'}`}
+                  onClick={() => setShowOverlay(!showOverlay)}
+                  className={`px-2 py-1 rounded text-xs ${showOverlay ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'}`}
                 >
-                  {showVideo ? 'On' : 'Off'}
+                  {showOverlay ? 'On' : 'Off'}
                 </button>
               </label>
             </div>
