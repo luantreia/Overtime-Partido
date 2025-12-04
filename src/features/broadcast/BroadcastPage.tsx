@@ -254,7 +254,7 @@ export const BroadcastPage = () => {
   useEffect(() => {
     if (programVideoRef.current && activeSlot) {
       const stream = streams.get(activeSlot);
-      console.log('[Broadcast] activeSlot changed', { activeSlot, hasStream: !!stream });
+      console.log('[Broadcast] activeSlot changed', { activeSlot, hasStream: !!stream, streamTracks: stream?.getTracks().length });
       if (stream) {
         programVideoRef.current.srcObject = stream;
         // Ensure program monitor can autoplay by muting it and attempting play
@@ -267,6 +267,8 @@ export const BroadcastPage = () => {
           console.warn('[Broadcast] Error forcing play on programVideo', e);
         }
         console.log('[Broadcast] programVideo srcObject set', { tracks: stream.getTracks().map(t => ({ id: t.id, kind: t.kind })) });
+      } else {
+        console.warn('[Broadcast] No stream available for activeSlot', activeSlot);
       }
     } else if (programVideoRef.current) {
       programVideoRef.current.srcObject = null;
@@ -339,6 +341,11 @@ export const BroadcastPage = () => {
             <div className={`w-2 h-2 rounded-full ${isSocketConnected ? 'bg-green-500' : 'bg-red-500'}`} />
             <span className="text-xs text-slate-500">{isSocketConnected ? 'Online' : 'Offline'}</span>
           </div>
+          {/* Compositor status */}
+          <div className="flex items-center gap-1">
+            <div className={`w-2 h-2 rounded-full ${isCompositorConnected ? 'bg-blue-500' : 'bg-gray-500'}`} />
+            <span className="text-xs text-slate-500">Compositor</span>
+          </div>
         </div>
       </header>
 
@@ -370,7 +377,14 @@ export const BroadcastPage = () => {
                     status={camera.status}
                     stream={stream}
                     isActive={activeSlot === slot}
-                    onClick={() => switchCamera(slot)}
+                    onClick={() => {
+                      console.log('[Broadcast] Switching to camera', slot, { isCompositorConnected });
+                      if (isCompositorConnected) {
+                        switchCamera(slot);
+                      } else {
+                        console.warn('[Broadcast] Cannot switch camera: compositor not connected');
+                      }
+                    }}
                   />
                   <button
                     onClick={() => copyLink(slot)}
