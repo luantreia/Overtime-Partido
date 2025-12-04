@@ -273,6 +273,19 @@ export const BroadcastPage = () => {
           console.warn('[Broadcast] Error forcing play on programVideo', e);
         }
         console.log('[Broadcast] programVideo srcObject set', { tracks: stream.getTracks().map(t => ({ id: t.id, kind: t.kind })) });
+
+        // Replace track in all viewer PCs for instant switch
+        const videoTrack = stream.getVideoTracks()[0];
+        if (videoTrack) {
+          programPCsRef.current.forEach((pc, viewerId) => {
+            const senders = pc.getSenders();
+            const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+            if (videoSender) {
+              console.log('[Broadcast] Replacing video track for viewer', viewerId);
+              videoSender.replaceTrack(videoTrack).catch(e => console.warn('[Broadcast] replaceTrack failed for viewer', viewerId, e));
+            }
+          });
+        }
       } else {
         console.warn('[Broadcast] No stream available for activeSlot', activeSlot);
       }
