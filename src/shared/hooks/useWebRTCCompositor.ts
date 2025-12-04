@@ -287,7 +287,11 @@ export function useWebRTCCompositor({
     if (!socket || !matchId) return;
 
     const joinCompositor = () => {
-      socket.emit('camera:compositor_join', { matchId });
+      // Force leave first to clean up any stale state
+      socket.emit('camera:compositor_leave', { matchId });
+      setTimeout(() => {
+        socket.emit('camera:compositor_join', { matchId });
+      }, 1000); // Wait 1 second before joining
     };
 
     joinCompositor(); // Initial join
@@ -297,6 +301,9 @@ export function useWebRTCCompositor({
       if (!isConnected && !error) {
         console.log('[Compositor] Retrying join...');
         joinCompositor();
+      } else if (isConnected) {
+        console.log('[Compositor] Connected successfully');
+        clearInterval(retryInterval);
       }
     }, 5000);
 
