@@ -71,7 +71,7 @@ const OverlayScoreboard: React.FC<Props> = ({ matchData, score, timers, inline =
   return (
     <div className="absolute top-10 left-10 flex items-stretch shadow-2xl rounded-lg overflow-hidden border-2 border-white bg-gray-900">
       {/* Local */}
-      <div className="bg-blue-900 text-white px-4 py-2 flex items-center gap-3 min-w-[180px]">
+      <div className="bg-red-900 text-white px-4 py-2 flex items-center gap-3 min-w-[180px]">
         {matchData.equipoLocal?.escudo && (
            <img src={matchData.equipoLocal.escudo} alt="Local" className="w-10 h-10 object-contain" />
         )}
@@ -94,7 +94,7 @@ const OverlayScoreboard: React.FC<Props> = ({ matchData, score, timers, inline =
       </div>
 
       {/* Visitor */}
-      <div className="bg-red-900 text-white px-4 py-2 flex items-center gap-3 min-w-[180px] flex-row-reverse">
+      <div className="bg-blue-900 text-white px-4 py-2 flex items-center gap-3 min-w-[180px] flex-row-reverse">
         {matchData.equipoVisitante?.escudo && (
            <img src={matchData.equipoVisitante.escudo} alt="Visita" className="w-10 h-10 object-contain" />
         )}
