@@ -38,8 +38,8 @@ export const ConfigPage = () => {
         authFetch<Partido[]>('/partidos/admin'),
         authFetch<Equipo[]>('/equipos')
       ]);
-      setPartidos(partidosData);
-      setEquipos(equiposData);
+      setPartidos(Array.isArray(partidosData) ? partidosData : []);
+      setEquipos(Array.isArray(equiposData) ? equiposData : []);
     } catch (error) {
       console.error(error);
       addToast({ type: 'error', message: 'Error al cargar datos' });
