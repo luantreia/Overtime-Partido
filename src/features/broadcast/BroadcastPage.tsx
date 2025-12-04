@@ -34,6 +34,7 @@ export const BroadcastPage = () => {
   const [copiedSlot, setCopiedSlot] = useState<string | null>(null);
   const [showScoreboardOverlay, setShowScoreboardOverlay] = useState(true);
   const [showOverlayTransparent, setShowOverlayTransparent] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(false);
   
   const programVideoRef = useRef<HTMLVideoElement>(null);
 
@@ -274,7 +275,7 @@ export const BroadcastPage = () => {
         } catch (e) {
           console.warn('[Broadcast] Error forcing play on programVideo', e);
         }
-        console.log('[Broadcast] programVideo srcObject set', { tracks: stream.getTracks().map(t => ({ id: t.id, kind: t.kind })) });
+        console.log('[Broadcast] programVideo srcObject set', { tracks: stream.getTracks().map(t => ({ id: t.id, kind: t.kind, enabled: t.enabled })) });
 
         // Replace track in all viewer PCs for instant switch
         const videoTrack = stream.getVideoTracks()[0];
@@ -469,7 +470,7 @@ export const BroadcastPage = () => {
                 ref={programVideoRef}
                 autoPlay
                 playsInline
-                muted={false}
+                muted={!audioEnabled}
                 className="w-full h-full object-contain"
               />
             ) : (
@@ -608,6 +609,15 @@ export const BroadcastPage = () => {
                   className={`px-2 py-1 rounded text-xs ${showVideo ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'}`}
                 >
                   {showVideo ? 'On' : 'Off'}
+                </button>
+              </label>
+              <label className="flex items-center justify-between">
+                <span className="text-xs text-slate-300">Audio</span>
+                <button
+                  onClick={() => setAudioEnabled(!audioEnabled)}
+                  className={`px-2 py-1 rounded text-xs ${audioEnabled ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'}`}
+                >
+                  {audioEnabled ? 'On' : 'Off'}
                 </button>
               </label>
             </div>
