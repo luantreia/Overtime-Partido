@@ -103,6 +103,14 @@ export function useWebRTCCompositor({
       if (pcInfo) {
         pcInfo.stream = stream;
       }
+
+      // Initially disable tracks if not active to save memory
+      if (activeSlot !== slot) {
+        stream.getTracks().forEach(track => {
+          console.log(`Disabling track for inactive slot ${slot}:`, track.kind);
+          track.enabled = false;
+        });
+      }
     };
 
     pc.oniceconnectionstatechange = () => {
@@ -120,7 +128,7 @@ export function useWebRTCCompositor({
 
     peerConnectionsRef.current.set(slot, { pc, stream: null });
     return pc;
-  }, [socket, matchId, iceServers]);
+  }, [socket, matchId, iceServers, activeSlot]);
 
   // Handle incoming offer from camera
   const handleOffer = useCallback(async (data: { matchId: string; slot: CameraSlot; sdp: RTCSessionDescriptionInit }) => {
@@ -281,6 +289,19 @@ export function useWebRTCCompositor({
       socket.off('camera:compositor_replaced', handleReplaced);
     };
   }, [socket, handleCameraState, handleCameraSwitched, handleOffer, handleIceCandidate, handleNewSource, handleSourceLeft]);
+
+  // Manage track enabled state based on activeSlot to save memory
+  useEffect(() => {
+    streams.forEach((stream, slot) => {
+      const shouldBeEnabled = slot === activeSlot;
+      stream.getTracks().forEach(track => {
+        if (track.enabled !== shouldBeEnabled) {
+          track.enabled = shouldBeEnabled;
+          console.log(`${shouldBeEnabled ? 'Enabled' : 'Disabled'} track for slot ${slot}:`, track.kind);
+        }
+      });
+    });
+  }, [activeSlot, streams]);
 
   // Join as compositor when socket connects
   useEffect(() => {
