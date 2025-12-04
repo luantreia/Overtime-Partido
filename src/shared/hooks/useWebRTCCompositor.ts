@@ -286,9 +286,22 @@ export function useWebRTCCompositor({
   useEffect(() => {
     if (!socket || !matchId) return;
 
-    socket.emit('camera:compositor_join', { matchId });
+    const joinCompositor = () => {
+      socket.emit('camera:compositor_join', { matchId });
+    };
+
+    joinCompositor(); // Initial join
+
+    // Retry join if failed after 5 seconds
+    const retryInterval = setInterval(() => {
+      if (!isConnected && !error) {
+        console.log('[Compositor] Retrying join...');
+        joinCompositor();
+      }
+    }, 5000);
 
     return () => {
+      clearInterval(retryInterval);
       // Cleanup peer connections
       peerConnectionsRef.current.forEach((pcInfo) => {
         pcInfo.pc.close();
@@ -296,7 +309,7 @@ export function useWebRTCCompositor({
       peerConnectionsRef.current.clear();
       setStreams(new Map());
     };
-  }, [socket, matchId]);
+  }, [socket, matchId, isConnected, error]);
 
   return {
     cameras,
