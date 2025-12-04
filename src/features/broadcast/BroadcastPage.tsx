@@ -33,6 +33,7 @@ export const BroadcastPage = () => {
   const [showVideo, setShowVideo] = useState(true);
   const [copiedSlot, setCopiedSlot] = useState<string | null>(null);
   const [showScoreboardOverlay, setShowScoreboardOverlay] = useState(true);
+  const [showOverlayTransparent, setShowOverlayTransparent] = useState(false);
   
   const programVideoRef = useRef<HTMLVideoElement>(null);
 
@@ -493,7 +494,7 @@ export const BroadcastPage = () => {
             {showOverlay && (
               <iframe
                 key={activeSlot}
-                src={`/overlay?matchId=${matchId}&transparent=${!showVideo}&showVideo=${showVideo}`}
+                src={`/overlay?matchId=${matchId}&transparent=${showOverlayTransparent}&showVideo=${showVideo}`}
                 className="absolute inset-0 w-full h-full pointer-events-none"
                 style={{ border: 'none' }}
                 title="Overlay"
@@ -588,6 +589,15 @@ export const BroadcastPage = () => {
                   className={`px-2 py-1 rounded text-xs ${showScoreboardOverlay ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'}`}
                 >
                   {showScoreboardOverlay ? 'Visible' : 'Hidden'}
+                </button>
+              </label>
+              <label className="flex items-center justify-between">
+                <span className="text-xs text-slate-300">Transparent</span>
+                <button
+                  onClick={() => setShowOverlayTransparent(!showOverlayTransparent)}
+                  className={`px-2 py-1 rounded text-xs ${showOverlayTransparent ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-400'}`}
+                >
+                  {showOverlayTransparent ? 'On' : 'Off'}
                 </button>
               </label>
             </div>
