@@ -77,6 +77,7 @@ export function useWebRTCCamera({
   
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const iceServersRef = useRef<RTCIceServer[]>([]);
+  const pendingIceCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Start camera or screen capture
