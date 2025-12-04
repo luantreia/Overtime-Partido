@@ -119,8 +119,14 @@ export const BroadcastPage = () => {
       const tracks = capturedStream.getTracks();
       console.log('[Broadcast] program stream ready', { tracksCount: tracks.length, trackKinds: tracks.map(t => t.kind) });
 
-      // Use a default STUN server to improve connectivity if no other config is present
-      const defaultIce = [{ urls: 'stun:stun.l.google.com:19302' }];
+      // Use multiple STUN servers to improve connectivity
+      const defaultIce = [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' },
+        { urls: 'stun:stun3.l.google.com:19302' },
+        { urls: 'stun:stun4.l.google.com:19302' }
+      ];
       const pc = new RTCPeerConnection({ iceServers: defaultIce });
       console.log('[Broadcast] created program PC for viewer', viewerSocketId);
 
