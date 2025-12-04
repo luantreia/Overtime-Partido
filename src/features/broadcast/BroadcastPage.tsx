@@ -34,6 +34,7 @@ export const BroadcastPage = () => {
   const [copiedSlot, setCopiedSlot] = useState<string | null>(null);
   const [showScoreboardOverlay, setShowScoreboardOverlay] = useState(true);
   const [showOverlayTransparent, setShowOverlayTransparent] = useState(false);
+  const [showProgramOutput, setShowProgramOutput] = useState(true);
   
   const programVideoRef = useRef<HTMLVideoElement>(null);
 
@@ -447,61 +448,63 @@ export const BroadcastPage = () => {
         </div>
 
         {/* Center: Program Output */}
-        <div className="flex-1 flex flex-col p-4 min-w-0">
-          {/* Program header */}
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Program Output</h2>
-              {activeSlot && (
-                <div className="flex items-center gap-1 bg-red-600 px-2 py-0.5 rounded text-xs font-bold">
-                  <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-                  {activeSlot.toUpperCase()} AL AIRE
+        {showProgramOutput && (
+          <div className="flex-1 flex flex-col p-4 min-w-0">
+            {/* Program header */}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Program Output</h2>
+                {activeSlot && (
+                  <div className="flex items-center gap-1 bg-red-600 px-2 py-0.5 rounded text-xs font-bold">
+                    <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                    {activeSlot.toUpperCase()} AL AIRE
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Program monitor */}
+            <div className="flex-1 relative bg-black rounded-lg overflow-hidden">
+              {showVideo ? (
+                <video
+                  ref={programVideoRef}
+                  autoPlay
+                  playsInline
+                  muted={false}
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-slate-900">
+                  <div className="text-slate-500">Video oculto (showVideo=false)</div>
                 </div>
+              )}
+
+              {/* No active camera */}
+              {!activeSlot && (
+                <div className="absolute inset-0 flex items-center justify-center bg-slate-900">
+                  <div className="text-center text-slate-500">
+                    <svg className="w-16 h-16 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    <p>Sin señal</p>
+                    <p className="text-xs mt-1">Selecciona una cámara</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Overlay iframe */}
+              {showOverlay && (
+                <iframe
+                  key={`${activeSlot}-${showOverlayTransparent}-${showVideo}`}
+                  src={`/overlay?matchId=${matchId}&transparent=${showOverlayTransparent}&showVideo=${showVideo}&t=${Date.now()}`}
+                  className="absolute inset-0 w-full h-full pointer-events-none"
+                  style={{ border: 'none' }}
+                  title="Overlay"
+                />
               )}
             </div>
           </div>
-
-          {/* Program monitor */}
-          <div className="flex-1 relative bg-black rounded-lg overflow-hidden">
-            {showVideo ? (
-              <video
-                ref={programVideoRef}
-                autoPlay
-                playsInline
-                muted={false}
-                className="w-full h-full object-contain"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-slate-900">
-                <div className="text-slate-500">Video oculto (showVideo=false)</div>
-              </div>
-            )}
-
-            {/* No active camera */}
-            {!activeSlot && (
-              <div className="absolute inset-0 flex items-center justify-center bg-slate-900">
-                <div className="text-center text-slate-500">
-                  <svg className="w-16 h-16 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                  <p>Sin señal</p>
-                  <p className="text-xs mt-1">Selecciona una cámara</p>
-                </div>
-              </div>
-            )}
-
-            {/* Overlay iframe */}
-            {showOverlay && (
-              <iframe
-                key={`${activeSlot}-${showOverlayTransparent}-${showVideo}`}
-                src={`/overlay?matchId=${matchId}&transparent=${showOverlayTransparent}&showVideo=${showVideo}&t=${Date.now()}`}
-                className="absolute inset-0 w-full h-full pointer-events-none"
-                style={{ border: 'none' }}
-                title="Overlay"
-              />
-            )}
-          </div>
-        </div>
+        )}
 
         {/* Right Sidebar: Score & Controls */}
         <div className="w-56 bg-slate-850 border-l border-slate-700 p-3 overflow-y-auto flex flex-col gap-4">
@@ -607,6 +610,15 @@ export const BroadcastPage = () => {
                   className={`px-2 py-1 rounded text-xs ${showVideo ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'}`}
                 >
                   {showVideo ? 'On' : 'Off'}
+                </button>
+              </label>
+              <label className="flex items-center justify-between">
+                <span className="text-xs text-slate-300">Program Output</span>
+                <button
+                  onClick={() => setShowProgramOutput(!showProgramOutput)}
+                  className={`px-2 py-1 rounded text-xs ${showProgramOutput ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'}`}
+                >
+                  {showProgramOutput ? 'On' : 'Off'}
                 </button>
               </label>
             </div>
