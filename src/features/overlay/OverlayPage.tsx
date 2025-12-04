@@ -45,7 +45,8 @@ export const OverlayPage = () => {
         programPcRef.current = pc;
 
         pc.ontrack = (event) => {
-          console.log('[Overlay][PC] ontrack', { streams: event.streams.length, tracks: event.streams[0]?.getTracks().map((t: any) => ({ id: t.id, kind: t.kind })) });
+          const tracks = event.streams[0]?.getTracks().map((t: any) => ({ id: t.id, kind: t.kind })) || [];
+          console.log('[Overlay][PC] ontrack - streams:', event.streams.length, 'tracks:', tracks.length, 'kinds:', tracks.map(t => t.kind));
           if (videoRef.current) {
             videoRef.current.srcObject = event.streams[0];
             videoRef.current.play().then(() => {

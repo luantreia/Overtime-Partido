@@ -259,6 +259,7 @@ export const BroadcastPage = () => {
 
   // Update program video when active slot changes
   useEffect(() => {
+    console.log('[Broadcast] useEffect activeSlot triggered', { activeSlot, programVideoRef: !!programVideoRef.current });
     if (programVideoRef.current && activeSlot) {
       const stream = streams.get(activeSlot);
       console.log('[Broadcast] activeSlot changed', { activeSlot, hasStream: !!stream, streamTracks: stream?.getTracks().length, trackKinds: stream?.getTracks().map(t => t.kind) });
