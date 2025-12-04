@@ -261,7 +261,7 @@ export const BroadcastPage = () => {
   useEffect(() => {
     if (programVideoRef.current && activeSlot) {
       const stream = streams.get(activeSlot);
-      console.log('[Broadcast] activeSlot changed', { activeSlot, hasStream: !!stream, streamTracks: stream?.getTracks().length });
+      console.log('[Broadcast] activeSlot changed', { activeSlot, hasStream: !!stream, streamTracks: stream?.getTracks().length, trackKinds: stream?.getTracks().map(t => t.kind) });
       if (stream) {
         programVideoRef.current.srcObject = stream;
         // Ensure program monitor can autoplay by muting it and attempting play
