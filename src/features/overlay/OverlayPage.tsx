@@ -288,6 +288,7 @@ export const OverlayPage = () => {
 
   // Determine background: transparent for OBS layer, black with video for full stream
   // `showVideo` computed from query params above
+  console.log('[Overlay] Params: transparent=', transparent, 'showVideo=', showVideo, 'bg=', (transparent || !showVideo) ? 'transparent' : 'black');
 
   return (
     <div className={`w-screen h-screen overflow-hidden relative font-sans ${(transparent || !showVideo) ? 'bg-transparent' : 'bg-black'}`}>
