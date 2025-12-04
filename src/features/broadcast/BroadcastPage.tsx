@@ -387,6 +387,8 @@ export const BroadcastPage = () => {
                       console.log('[Broadcast] Switching to camera', slot, { isCompositorConnected });
                       if (isCompositorConnected) {
                         switchCamera(slot);
+                        // Notify overlays to refresh
+                        socket.emit('camera:switched', { matchId, activeSlot: slot });
                       } else {
                         console.warn('[Broadcast] Cannot switch camera: compositor not connected');
                       }
@@ -419,7 +421,10 @@ export const BroadcastPage = () => {
 
           {/* Quick action */}
           <button
-            onClick={() => switchCamera(null)}
+            onClick={() => {
+              switchCamera(null);
+              socket.emit('camera:switched', { matchId, activeSlot: null });
+            }}
             disabled={!activeSlot}
             className="mt-3 w-full py-2 px-3 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed text-slate-300 rounded text-xs"
           >
@@ -605,6 +610,17 @@ export const BroadcastPage = () => {
               className="text-xs text-blue-400 hover:text-blue-300 mt-1 inline-block"
             >
               Abrir Overlay →
+            </a>
+            <p className="text-xs text-slate-500">
+              Captura esta ventana o usa Browser Source con la URL del overlay.
+            </p>
+            <a 
+              href={`/overlay?matchId=${matchId}&transparent=true`} 
+              target="_blank" 
+              rel="noreferrer" 
+              className="text-xs text-blue-400 hover:text-blue-300 mt-1 inline-block"
+            >
+              Abrir overlay Solo Marcador →
             </a>
           </div>
         </div>

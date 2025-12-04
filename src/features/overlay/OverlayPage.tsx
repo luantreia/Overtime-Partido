@@ -23,6 +23,7 @@ export const OverlayPage = () => {
 
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [isDataFlowing, setIsDataFlowing] = useState(false);
+  const [forceReconnect, setForceReconnect] = useState(0);
   
   // Video ref for program stream
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -99,7 +100,7 @@ export const OverlayPage = () => {
         try { videoRef.current.pause(); videoRef.current.srcObject = null; } catch (e) {}
       }
     };
-  }, [showVideo, isSocketConnected, matchId]);
+  }, [showVideo, isSocketConnected, matchId, forceReconnect]);
 
   // Track socket connection
   useEffect(() => {
@@ -250,6 +251,11 @@ export const OverlayPage = () => {
       if (data.showScoreboard !== undefined) setShowScoreboard(data.showScoreboard);
     });
 
+    socket.on('camera:switched', (data) => {
+      console.log('[Overlay] Camera switched, forcing reconnect', data);
+      setForceReconnect(prev => prev + 1);
+    });
+
     return () => {
       socket.off('connect');
       socket.off('disconnect');
@@ -258,6 +264,7 @@ export const OverlayPage = () => {
       socket.off('timer:update');
       socket.off('overlay:triggered');
       socket.off('overlay:config');
+      socket.off('camera:switched');
       // socket.disconnect(); // Removed to prevent aggressive disconnection
     };
   }, [matchId]);
