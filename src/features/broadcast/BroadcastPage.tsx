@@ -491,6 +491,7 @@ export const BroadcastPage = () => {
             {/* Overlay iframe */}
             {showOverlay && (
               <iframe
+                key={activeSlot}
                 src={`/overlay?matchId=${matchId}&transparent=${!showVideo}&showVideo=${showVideo}`}
                 className="absolute inset-0 w-full h-full pointer-events-none"
                 style={{ border: 'none' }}
