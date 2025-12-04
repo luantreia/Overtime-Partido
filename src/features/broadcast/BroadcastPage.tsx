@@ -458,23 +458,6 @@ export const BroadcastPage = () => {
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-2">
-              <label className="flex items-center gap-2 text-xs">
-                <input
-                  type="checkbox"
-                  checked={showVideo}
-                  onChange={(e) => setShowVideo(e.target.checked)}
-                  className="w-4 h-4"
-                />
-                <span className="text-slate-400">Show Video</span>
-              </label>
-              <button
-                onClick={() => setShowOverlay(!showOverlay)}
-                className={`px-2 py-1 rounded text-xs ${showOverlay ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'}`}
-              >
-                Overlay {showOverlay ? 'ON' : 'OFF'}
-              </button>
-            </div>
           </div>
 
           {/* Program monitor */}
