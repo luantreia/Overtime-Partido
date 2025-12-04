@@ -8,7 +8,7 @@ import { useDriftFreeTimers } from '../../shared/hooks/useDriftFreeTimers';
 export const OverlayPage = () => {
   const [searchParams] = useSearchParams();
   const matchId = searchParams.get('matchId');
-  const transparent = searchParams.get('transparent') === 'true';
+  const transparent = searchParams.get('transparent') !== 'false';
   const showVideoParam = searchParams.get('showVideo');
   // showVideo explicit param if provided, otherwise inverse of transparent
   const showVideo = showVideoParam !== null ? showVideoParam === 'true' : !transparent;
