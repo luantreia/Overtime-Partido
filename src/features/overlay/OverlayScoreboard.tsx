@@ -49,7 +49,7 @@ const OverlayScoreboard: React.FC<Props> = ({ matchData, score, timers, inline =
       <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-2 flex items-center gap-4 min-h-[120px] max-h-[40%]">
         <div className="flex-1">
           <div className="text-xs font-bold text-slate-600 truncate">{matchData.equipoLocal?.nombre || 'LOCAL'}</div>
-          <div className="text-4xl font-mono font-bold text-blue-600">{score.local}</div>
+          <div className="text-4xl font-mono font-bold text-red-600">{score.local}</div>
         </div>
         <div className="text-center">
           <div className="text-[10px] font-bold text-gray-500">Periodo {timers.period}</div>
@@ -62,7 +62,7 @@ const OverlayScoreboard: React.FC<Props> = ({ matchData, score, timers, inline =
         </div>
         <div className="flex-1 text-right">
           <div className="text-xs font-bold text-slate-600 truncate">{matchData.equipoVisitante?.nombre || 'VISITA'}</div>
-          <div className="text-4xl font-mono font-bold text-red-600">{score.visitor}</div>
+          <div className="text-4xl font-mono font-bold text-blue-600">{score.visitor}</div>
         </div>
       </div>
     );
