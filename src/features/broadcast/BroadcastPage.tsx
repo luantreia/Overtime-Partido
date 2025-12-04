@@ -490,7 +490,7 @@ export const BroadcastPage = () => {
               </div>
             )}
 
-            {/* Overlay iframe
+            {/* Overlay iframe */}
             {showOverlay && (
               <iframe
                 key={`${activeSlot}-${showOverlayTransparent}-${showVideo}`}
@@ -499,7 +499,7 @@ export const BroadcastPage = () => {
                 style={{ border: 'none' }}
                 title="Overlay"
               />
-            )} */}
+            )}
           </div>
         </div>
 
