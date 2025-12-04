@@ -268,7 +268,7 @@ export const BroadcastPage = () => {
         programVideoRef.current.srcObject = stream;
         // Ensure program monitor can autoplay by muting it and attempting play
         try {
-          programVideoRef.current.muted = true;
+          programVideoRef.current.muted = !audioEnabled;
           programVideoRef.current.play().then(() => {
             console.log('[Broadcast] programVideo playing');
           }).catch((e) => console.warn('[Broadcast] programVideo play failed', e));
@@ -297,6 +297,13 @@ export const BroadcastPage = () => {
       console.log('[Broadcast] programVideo cleared (no activeSlot)');
     }
   }, [activeSlot, streams]);
+
+  // Update audio mute when audioEnabled changes
+  useEffect(() => {
+    if (programVideoRef.current) {
+      programVideoRef.current.muted = !audioEnabled;
+    }
+  }, [audioEnabled]);
 
   // Trigger overlay
   const triggerOverlay = (type: string, action: 'SHOW' | 'HIDE') => {
