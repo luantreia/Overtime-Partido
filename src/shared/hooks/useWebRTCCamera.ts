@@ -300,11 +300,12 @@ export function useWebRTCCamera({
           setStatus('error');
           setIsConnected(false);
           socket?.emit('camera:status', { status: 'error' });
-          // Retry connection after 10 seconds
+          // Retry connection after 10 seconds, repeatedly until connected
           if (!retryTimeoutRef.current) {
             retryTimeoutRef.current = setTimeout(() => {
+              retryTimeoutRef.current = null; // Reset for next retry
               console.log('Retrying camera connection...');
-              if (localStream) {
+              if (localStream && !isConnected) {
                 initiateConnection();
               }
             }, 10000);
