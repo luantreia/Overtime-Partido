@@ -77,7 +77,7 @@ export function useWebRTCCamera({
   
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const iceServersRef = useRef<RTCIceServer[]>([]);
-  const pendingIceCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Start camera or screen capture
   const startCapture = useCallback(async (source?: CaptureSource) => {
@@ -288,12 +288,26 @@ export function useWebRTCCamera({
           setStatus('live');
           setIsConnected(true);
           socket?.emit('camera:status', { status: 'live' });
+          // Clear any retry timeout
+          if (retryTimeoutRef.current) {
+            clearTimeout(retryTimeoutRef.current);
+            retryTimeoutRef.current = null;
+          }
           break;
         case 'disconnected':
         case 'failed':
           setStatus('error');
           setIsConnected(false);
           socket?.emit('camera:status', { status: 'error' });
+          // Retry connection after 5 seconds
+          if (!retryTimeoutRef.current) {
+            retryTimeoutRef.current = setTimeout(() => {
+              console.log('Retrying camera connection...');
+              if (localStream) {
+                initiateConnection();
+              }
+            }, 5000);
+          }
           break;
         case 'closed':
           setStatus('offline');
@@ -464,6 +478,9 @@ export function useWebRTCCamera({
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+      }
       stopCapture();
     };
   }, []);
