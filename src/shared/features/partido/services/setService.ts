@@ -11,6 +11,8 @@ export interface SetPartidoDTO {
   timerSuddenDeathValue?: number;
   timerSuddenDeathRunning?: boolean;
   suddenDeathMode?: boolean;
+  duracionReal?: number;
+  lastSetDuration?: number;
 }
 
 export const listSets = (matchId: string) => authFetch<SetPartidoDTO[]>(`/set-partido?partido=${matchId}`);

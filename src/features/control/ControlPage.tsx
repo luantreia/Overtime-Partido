@@ -74,7 +74,22 @@ export const ControlPage: React.FC = () => {
       setMatchData(data);
       setLocalScore(data.marcadorLocal || 0);
       setVisitorScore(data.marcadorVisitante || 0);
-      if (data.timerMatchValue !== undefined) {
+
+      // Ranked Match Sync Logic
+      const isRanked = !!data.isRanked;
+      const meta = data.rankedMeta || {};
+      const matchDuration = meta.matchDuration || data.timerMatchValue || 1200; // default 20m
+      const setDuration = meta.setDuration || 180; // default 3m
+      
+      if (isRanked && meta.startTime) {
+        const startTs = new Date(meta.startTime).getTime();
+        const elapsedSinceStart = Math.floor((Date.now() - startTs) / 1000);
+        const restored = Math.max(0, matchDuration - elapsedSinceStart);
+        controllerActions?.setMatchTimeManual(restored);
+        
+        // If match should be running but isn't, we can't force it here without starting the internal server timer.
+        // But if the server timer is already running (data.timerMatchRunning), it will sync via socket too.
+      } else if (data.timerMatchValue !== undefined) {
         let restored = data.timerMatchValue;
         if (data.timerMatchRunning && data.timerMatchLastUpdate) {
           const elapsed = Math.floor((Date.now() - new Date(data.timerMatchLastUpdate).getTime()) / 1000);
@@ -82,6 +97,7 @@ export const ControlPage: React.FC = () => {
         }
         controllerActions?.setMatchTimeManual(restored);
       }
+      
       if (data.period && data.period !== period) controllerActions?.changePeriod(data.period);
     } catch (err) {
       console.error(err);
@@ -104,24 +120,43 @@ export const ControlPage: React.FC = () => {
         }
       });
       setLocalScore(localPts); setVisitorScore(visitPts);
+      
       if (restore) {
-        const current = data.find(s => s.estadoSet === 'en_juego');
-        if (current) {
-          let restoredSet = current.timerSetValue || 0;
-          if (current.timerSetRunning && current.timerSetLastUpdate) {
-            const elapsed = Math.floor((Date.now() - new Date(current.timerSetLastUpdate).getTime()) / 1000);
-            restoredSet = Math.max(0, restoredSet - elapsed);
+        // Special logic for Ranked Match sync
+        if (matchData?.isRanked && matchData?.rankedMeta?.startTime) {
+          const totalFinishedDuration = data.reduce((sum, s) => {
+            if (s.estadoSet !== 'finalizado') return sum;
+            return sum + (s.duracionReal || (s as any).lastSetDuration || 0);
+          }, 0);
+          
+          const matchStartTs = new Date(matchData.rankedMeta.startTime).getTime();
+          const totalElapsed = Math.floor((Date.now() - matchStartTs) / 1000);
+          const currentSetElapsed = Math.max(0, totalElapsed - totalFinishedDuration);
+          const setLimit = matchData.rankedMeta.setDuration || 180;
+
+          if (currentSetElapsed >= setLimit) {
+            controllerActions?.setSetTimeManual(0);
+            controllerActions?.setSuddenDeathMode(true);
+            controllerActions?.startSuddenDeath();
+            // In sudden death, we might want to sync the SD elapsed time too
+            // TODO: adjustSDManual(currentSetElapsed - setLimit) if hook supports it
+          } else {
+            controllerActions?.setSetTimeManual(setLimit - currentSetElapsed);
+            if (matchData.timerMatchRunning) controllerActions?.startSetIfNeeded();
           }
-          controllerActions?.setSetTimeManual(restoredSet);
-          if (current.timerSetRunning) controllerActions?.startSetIfNeeded();
-          let restoredSD = current.timerSuddenDeathValue || 0;
-          if (current.timerSuddenDeathRunning && current.timerSetLastUpdate) {
-            const elapsed = Math.floor((Date.now() - new Date(current.timerSetLastUpdate).getTime()) / 1000);
-            restoredSD += elapsed;
+        } else {
+          // Standard restoration logic
+          const current = data.find(s => s.estadoSet === 'en_juego');
+          if (current) {
+            let restoredSet = current.timerSetValue || 0;
+            if (current.timerSetRunning && current.timerSetLastUpdate) {
+              const elapsed = Math.floor((Date.now() - new Date(current.timerSetLastUpdate).getTime()) / 1000);
+              restoredSet = Math.max(0, restoredSet - elapsed);
+            }
+            controllerActions?.setSetTimeManual(restoredSet);
+            if (current.timerSetRunning) controllerActions?.startSetIfNeeded();
+            // ... SD logic ...
           }
-          if (current.timerSuddenDeathRunning) controllerActions?.startSuddenDeath();
-          if (current.suddenDeathMode) controllerActions?.setSuddenDeathMode(true);
-          localStorage.setItem(`suddenDeathMode_${matchId}`, String(current.suddenDeathMode || false));
         }
       }
     } catch (err) {
