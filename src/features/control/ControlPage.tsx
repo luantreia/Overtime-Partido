@@ -12,7 +12,7 @@ import { showOverlay, hideOverlay } from '../../shared/services/overlayService';
 type SetPartido = SetPartidoDTO;
 
 // Custom hook for debounced actions (prevents double-clicks)
-const useDebounce = (delay = 600) => {
+const useDebounce = (delay = 1000) => {
   const lastCallRef = useRef<Map<string, number>>(new Map());
   
   const debounce = useCallback(<T extends (...args: any[]) => Promise<any>>(fn: T, key = 'default') => {
@@ -210,46 +210,94 @@ export const ControlPage: React.FC = () => {
   };
 
   const startNewSetInternal = async (autoStart = false) => {
-    if (!matchId) return;
+    if (!matchId || isSaving) return;
     const nextSetNumber = sets.length + 1;
     setIsSaving(true);
     try {
-      await createSet(matchId, nextSetNumber);
+      const created = await createSet(matchId, nextSetNumber);
       addToast({ type: 'success', message: `Set ${nextSetNumber} iniciado` });
-      await loadSets(false);
+      
+      // Optimistic update to make it feel faster
+      setSets(prev => [...prev, created]);
+      
       // Timer is automatically reset to default (3:00) by backend when creating new set
       // Only pause set timer, not match timer
       controllerActions?.pauseSetOnly();
+      
       if (autoStart) {
         if (matchData?.modalidad === 'Foam' && !suddenDeathMode) {
-          // No save needed
+          // No action needed
         } else {
           controllerActions?.startSetIfNeeded();
         }
-      } else {
-        // No save needed
       }
-    } catch { addToast({ type: 'error', message: 'Error al iniciar set' }); } finally { setIsSaving(false); }
+    } catch (err: any) { 
+      console.error('Error starting new set:', err);
+      // If it's a duplicate set error, just reload the list to recover
+      if (err.message?.includes('Ya existe') || err.message?.includes('duplicate')) {
+         await loadSets(false);
+      } else {
+         addToast({ type: 'error', message: 'Error al iniciar set' }); 
+      }
+    } finally { 
+      setIsSaving(false); 
+      // Background sync to ensure everything is correct
+      loadSets(false).catch(() => {});
+    }
   };
   const startNewSet = debounce(startNewSetInternal, 'startNewSet');
 
   const finishSetInternal = async (setId: string, winner: 'local' | 'visitante' | 'empate') => {
+    if (isSaving) return;
     setIsSaving(true);
     try {
-      // Only pause set/sudden death timer, not the match timer
+      // 1. Pause set/sudden death timer immediately
       controllerActions?.pauseSetOnly();
-      // saveTimerState removed
-      await finishSetApi(setId, winner);
-      let title = 'SET FINALIZADO'; let subtitle = '';
-      if (winner === 'local') subtitle = `Set para ${matchData.equipoLocal.nombre}`; else if (winner === 'visitante') subtitle = `Set para ${matchData.equipoVisitante.nombre}`; else subtitle = 'Set Empatado';
-      showOverlay(socket, matchId, 'SET_WINNER', { title, subtitle });
+
+      // 2. Calculate points and update UI immediately (Optimistic Score)
       let ptsLocal = 0, ptsVisit = 0;
-      if (matchData.modalidad === 'Cloth') { if (winner === 'local') ptsLocal = 2; else if (winner === 'visitante') ptsVisit = 2; else { ptsLocal = 1; ptsVisit = 1; } }
-      else { if (winner === 'local') ptsLocal = 1; else if (winner === 'visitante') ptsVisit = 1; }
-      await updateGlobalScore(localScore + ptsLocal, visitorScore + ptsVisit);
+      if (matchData.modalidad === 'Cloth') { 
+        if (winner === 'local') ptsLocal = 2; else if (winner === 'visitante') ptsVisit = 2; else { ptsLocal = 1; ptsVisit = 1; } 
+      } else { 
+        if (winner === 'local') ptsLocal = 1; else if (winner === 'visitante') ptsVisit = 1; 
+      }
+      
+      const newScoreLocal = localScore + ptsLocal;
+      const newScoreVisitor = visitorScore + ptsVisit;
+
+      // Update local state and emit to socket immediately
+      setLocalScore(newScoreLocal);
+      setVisitorScore(newScoreVisitor);
+      socket.emit('score:update', { matchId, localScore: newScoreLocal, visitorScore: newScoreVisitor });
+
+      // 3. Fire API calls in parallel or sequence
+      await finishSetApi(setId, winner);
+      
+      let title = 'SET FINALIZADO'; 
+      let subtitle = '';
+      if (winner === 'local') subtitle = `Set para ${matchData.equipoLocal.nombre}`; 
+      else if (winner === 'visitante') subtitle = `Set para ${matchData.equipoVisitante.nombre}`; 
+      else subtitle = 'Set Empatado';
+      
+      showOverlay(socket, matchId, 'SET_WINNER', { title, subtitle });
+      
+      // Update match record in background
+      authFetch(`/partidos/${matchId}`, { 
+        method: 'PUT', 
+        body: { marcadorLocal: newScoreLocal, marcadorVisitante: newScoreVisitor } 
+      }).catch(e => console.error('Error guardando marcador', e));
+
       addToast({ type: 'success', message: `Set finalizado: ${winner}` });
+      
+      // 4. Reload sets to ensure sync
       await loadSets();
-    } catch { addToast({ type: 'error', message: 'Error al finalizar set' }); } finally { setIsSaving(false); }
+    } catch (err) { 
+      console.error('Error finishing set:', err);
+      addToast({ type: 'error', message: 'Error al finalizar set' }); 
+      // Rollback on error? (Optional)
+    } finally { 
+      setIsSaving(false); 
+    }
   };
   const finishSet = debounce(finishSetInternal, 'finishSet');
 
