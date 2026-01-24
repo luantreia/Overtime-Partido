@@ -352,6 +352,50 @@ export const ControlPage: React.FC = () => {
     addToast({ type: 'success', message: 'Partido Reiniciado' });
   };
 
+  const finalizeMatch = async () => {
+    if (!matchId || !matchData) return;
+    if (!window.confirm('¿Finalizar el partido y subir resultados permanentes?')) return;
+    
+    setIsSaving(true);
+    try {
+      // 1. Stop all timers
+      controllerActions?.pauseAll();
+      
+      // 2. Prepare sets data for ranking
+      const mappedSets = sets.map(s => ({
+        _id: s._id,
+        winner: s.ganadorSet,
+        time: s.lastSetDuration || 0
+      }));
+
+      // 3. Call the finalize endpoint
+      const res: any = await authFetch(`/api/ranked/match/${matchId}/finalize`, {
+        method: 'POST',
+        body: {
+          marcadorLocal: localScore,
+          marcadorVisitante: visitorScore,
+          sets: mappedSets,
+          creadoPor: 'mesa-de-control',
+          startTime: matchData.rankedMeta?.startTime || Date.now() 
+        }
+      });
+      
+      if (res.ok) {
+        addToast({ type: 'success', message: 'Partido finalizado con éxito' });
+        // Hide overlay and navigate
+        hideOverlay(socket, matchId, 'ALL');
+        navigate('/'); 
+      } else {
+        throw new Error(res.message || 'Error al finalizar');
+      }
+    } catch (e: any) {
+      console.error('Error finalizando:', e);
+      addToast({ type: 'error', message: e.message || 'Error al finalizar partido' });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const updateMatchTimeManual = () => { const val = prompt('Tiempo partido (min, ej 15.5):'); if (val && !isNaN(+val)) controllerActions?.setMatchTimeManual(Math.floor(parseFloat(val) * 60)); };
   const updateSetTimeManual = () => { const val = prompt('Tiempo set (min, ej 3):'); if (val && !isNaN(+val)) controllerActions?.setSetTimeManual(Math.floor(parseFloat(val) * 60)); };
   const changePeriod = (newPeriod: number) => { if (!confirmPeriodChange(period, newPeriod)) return; controllerActions?.changePeriod(newPeriod); addToast({ type: 'info', message: `Cambiado a ${newPeriod}º Tiempo` }); };
@@ -419,7 +463,16 @@ export const ControlPage: React.FC = () => {
                 <button onClick={() => pauseMatch('TIMEOUT','visitante')} className="bg-orange-100 text-orange-800 text-xs font-bold py-2 rounded hover:bg-orange-200">Time Out Visita</button>
                 <button onClick={() => pauseMatch('REVIEW')} className="col-span-2 bg-purple-100 text-purple-800 text-xs font-bold py-2 rounded hover:bg-purple-200">Revisión Arbitral</button>
               </div>
-              <div className="mt-auto pt-2 border-t border-slate-100"><button onClick={resetMatch} className="w-full text-[10px] text-red-400 hover:text-red-600 hover:bg-red-50 py-1 rounded transition-colors">⚠️ REINICIAR PARTIDO</button></div>
+              <div className="mt-auto pt-2 border-t border-slate-100 space-y-2">
+                <button 
+                  onClick={finalizeMatch} 
+                  disabled={isSaving}
+                  className="w-full bg-emerald-600 text-white font-black py-3 rounded-lg hover:bg-emerald-700 transition shadow-md uppercase tracking-widest text-sm disabled:opacity-50"
+                >
+                  {isSaving ? 'Guardando...' : '🏁 Finalizar Partido'}
+                </button>
+                <button onClick={resetMatch} className="w-full text-[10px] text-red-400 hover:text-red-600 hover:bg-red-50 py-1 rounded transition-colors uppercase font-bold">⚠️ Reiniciar Partido</button>
+              </div>
             </div>
           </div>
           <div className="md:col-span-5 flex flex-col gap-2">
