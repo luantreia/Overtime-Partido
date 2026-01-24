@@ -27,11 +27,7 @@ export const ConfigPage = () => {
   const [modalidad, setModalidad] = useState<'Foam' | 'Cloth'>('Foam');
   const [categoria, setCategoria] = useState<'Mixto' | 'Masculino' | 'Femenino' | 'Libre'>('Mixto');
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       const [partidosData, equiposData] = await Promise.all([
@@ -46,7 +42,11 @@ export const ConfigPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [addToast]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleCreateMatch = async (e: React.FormEvent) => {
     e.preventDefault();

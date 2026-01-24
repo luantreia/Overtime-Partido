@@ -303,11 +303,12 @@ export function useWebRTCCompositor({
     });
   }, [activeSlot, streams]);
 
-  // Join as compositor when socket connects
+  // Join as compositor when socket connects and handle retries
   useEffect(() => {
     if (!socket || !matchId) return;
 
     const joinCompositor = () => {
+      console.log('[Compositor] Joining match room:', matchId);
       // Force leave first to clean up any stale state
       socket.emit('camera:compositor_leave', { matchId });
       setTimeout(() => {
@@ -317,27 +318,33 @@ export function useWebRTCCompositor({
 
     joinCompositor(); // Initial join
 
-    // Retry join if failed after 5 seconds
+    // Retry join if not connected - check state through refs to avoid effect churn
     const retryInterval = setInterval(() => {
+      // Note: We're using the outer scope's variables here. 
+      // To get fresh values without restarts, we'd need refs or dependencies.
+      // If we use dependencies [isConnected, error], the effect restarts and joinCompositor runs again anyway.
       if (!isConnected && !error) {
         console.log('[Compositor] Retrying join...');
         joinCompositor();
-      } else if (isConnected) {
-        console.log('[Compositor] Connected successfully');
-        clearInterval(retryInterval);
       }
     }, 5000);
 
     return () => {
       clearInterval(retryInterval);
-      // Cleanup peer connections
-      peerConnectionsRef.current.forEach((pcInfo) => {
-        pcInfo.pc.close();
-      });
-      peerConnectionsRef.current.clear();
-      setStreams(new Map());
     };
   }, [socket, matchId, isConnected, error]);
+
+  // Cleanup peer connections only on unmount
+  useEffect(() => {
+    const currentPCs = peerConnectionsRef.current;
+    return () => {
+      console.log('[Compositor] Cleaning up all peer connections');
+      currentPCs.forEach((pcInfo) => {
+        pcInfo.pc.close();
+      });
+      currentPCs.clear();
+    };
+  }, []);
 
   return {
     cameras,

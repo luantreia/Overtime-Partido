@@ -15,7 +15,6 @@ import type {
   CameraSlot, 
   CameraStatus, 
   VideoQuality, 
-  VIDEO_PRESETS,
   CameraState,
   CameraJoinResult 
 } from '../types/camera.types';
@@ -79,6 +78,29 @@ export function useWebRTCCamera({
   const iceServersRef = useRef<RTCIceServer[]>([]);
   const pendingIceCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const localStreamRef = useRef<MediaStream | null>(null);
+  
+  useEffect(() => {
+    localStreamRef.current = localStream;
+  }, [localStream]);
+
+  const stopCapture = useCallback(() => {
+    const stream = localStreamRef.current;
+    if (stream) {
+      console.log('Stopping stream:', stream.id);
+      stream.getTracks().forEach(track => track.stop());
+      setLocalStream(null);
+    }
+    
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.close();
+      peerConnectionRef.current = null;
+    }
+    
+    setStatus('offline');
+    setIsConnected(false);
+  }, []);
 
   // Start camera or screen capture
   const startCapture = useCallback(async (source?: CaptureSource) => {
@@ -147,31 +169,7 @@ export function useWebRTCCamera({
       }
       setStatus('error');
     }
-  }, [quality, facingMode, isMuted, captureSource]);
-
-  // Stop camera capture - use ref to avoid dependency issues
-  const localStreamRef = useRef<MediaStream | null>(null);
-  
-  useEffect(() => {
-    localStreamRef.current = localStream;
-  }, [localStream]);
-
-  const stopCapture = useCallback(() => {
-    const stream = localStreamRef.current;
-    if (stream) {
-      console.log('Stopping stream:', stream.id);
-      stream.getTracks().forEach(track => track.stop());
-      setLocalStream(null);
-    }
-    
-    if (peerConnectionRef.current) {
-      peerConnectionRef.current.close();
-      peerConnectionRef.current = null;
-    }
-    
-    setStatus('offline');
-    setIsConnected(false);
-  }, []);
+  }, [quality, facingMode, isMuted, captureSource, stopCapture]);
 
   // Change video quality
   const setQuality = useCallback(async (newQuality: VideoQuality) => {
@@ -260,6 +258,8 @@ export function useWebRTCCamera({
     await startCapture(newSource);
   }, [captureSource, localStream, startCapture]);
 
+  const initiateConnectionRef = useRef<() => Promise<void>>();
+
   // Create WebRTC peer connection
   const createPeerConnection = useCallback(() => {
     if (peerConnectionRef.current) {
@@ -305,8 +305,9 @@ export function useWebRTCCamera({
             retryTimeoutRef.current = setTimeout(() => {
               retryTimeoutRef.current = null; // Reset for next retry
               console.log('Retrying camera connection...');
-              if (localStream && !isConnected) {
-                initiateConnection();
+              // Use refs to avoid closure stale values and circularity
+              if (localStreamRef.current && !isConnected && initiateConnectionRef.current) {
+                initiateConnectionRef.current();
               }
             }, 10000);
           }
@@ -320,7 +321,7 @@ export function useWebRTCCamera({
 
     peerConnectionRef.current = pc;
     return pc;
-  }, [socket, matchId, slot]);
+  }, [socket, matchId, slot, isConnected]);
 
   // Add local stream to peer connection and create offer
   const initiateConnection = useCallback(async () => {
@@ -358,6 +359,11 @@ export function useWebRTCCamera({
       setStatus('error');
     }
   }, [localStream, socket, matchId, slot, createPeerConnection]);
+
+  // Update ref for circular usage
+  useEffect(() => {
+    initiateConnectionRef.current = initiateConnection;
+  }, [initiateConnection]);
 
   // Socket event handlers
   useEffect(() => {
@@ -467,7 +473,7 @@ export function useWebRTCCamera({
       socket.off('camera:ice', handleIceCandidate);
       socket.off('camera:request_offer', handleNewSourceRequest);
     };
-  }, [socket, matchId, slot, localStream, status, initiateConnection]);
+  }, [socket, matchId, slot, localStream, status, initiateConnection, isConnected]);
 
   // Join room and register camera when socket connects
   useEffect(() => {

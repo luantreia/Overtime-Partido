@@ -67,7 +67,7 @@ export const ControlPage: React.FC = () => {
     const m = Math.floor(seconds / 60); const s = seconds % 60; return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
   };
 
-  const loadMatchData = async () => {
+  const loadMatchData = useCallback(async () => {
     if (!matchId) return;
     try {
       const data: any = await authFetch(`/partidos/${matchId}`);
@@ -79,7 +79,6 @@ export const ControlPage: React.FC = () => {
       const isRanked = !!data.isRanked;
       const meta = data.rankedMeta || {};
       const matchDuration = meta.matchDuration || data.timerMatchValue || 1200; // default 20m
-      const setDuration = meta.setDuration || 180; // default 3m
       
       if (isRanked && meta.startTime) {
         const startTs = new Date(meta.startTime).getTime();
@@ -102,9 +101,9 @@ export const ControlPage: React.FC = () => {
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [matchId, controllerActions, period]);
 
-  const loadSets = async (restore = false) => {
+  const loadSets = useCallback(async (restore = false) => {
     if (!matchId) return;
     setIsLoading(true);
     try {
@@ -164,7 +163,7 @@ export const ControlPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [matchId, matchData, controllerActions]);
 
   useEffect(() => { if (!matchId) navigate('/config'); }, [matchId, navigate]);
   
@@ -180,7 +179,7 @@ export const ControlPage: React.FC = () => {
       }
     };
     initialize();
-  }, [matchId]);
+  }, [matchId, loadMatchData, loadSets]);
 
   useEffect(() => {
     if (!matchId) return;
@@ -215,7 +214,7 @@ export const ControlPage: React.FC = () => {
     const nextSetNumber = sets.length + 1;
     setIsSaving(true);
     try {
-      const newSet = await createSet(matchId, nextSetNumber);
+      await createSet(matchId, nextSetNumber);
       addToast({ type: 'success', message: `Set ${nextSetNumber} iniciado` });
       await loadSets(false);
       // Timer is automatically reset to default (3:00) by backend when creating new set

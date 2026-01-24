@@ -29,7 +29,6 @@ export const BroadcastPage = () => {
   const [visitorScore, setVisitorScore] = useState(0);
   const [isSocketConnected, setIsSocketConnected] = useState(socket.connected);
   const [matchData, setMatchData] = useState<any>(null);
-  const [showOverlay, setShowOverlay] = useState(true);
   const [showVideo, setShowVideo] = useState(true);
   const [copiedSlot, setCopiedSlot] = useState<string | null>(null);
   const [showScoreboardOverlay, setShowScoreboardOverlay] = useState(true);
@@ -194,18 +193,30 @@ export const BroadcastPage = () => {
     socket.on('program:answer', handleProgramAnswer);
     socket.on('program:ice', handleProgramIce);
 
+    const currentPCs = programPCsRef.current;
+
     return () => {
       socket.off('program:init_viewer', handleInitViewer);
       socket.off('program:answer', handleProgramAnswer);
       socket.off('program:ice', handleProgramIce);
       // cleanup pcs
-      programPCsRef.current.forEach((pc, viewerId) => {
+      currentPCs.forEach((pc, viewerId) => {
         console.log('[Broadcast] closing PC for viewer', viewerId);
         try { pc.close(); } catch (e) {}
       });
-      programPCsRef.current.clear();
+      currentPCs.clear();
     };
-  }, [socket, matchId]);
+  }, [socket, matchId, activeSlot]);
+
+  // Load match data
+  const loadMatchData = useCallback(() => {
+    if (!matchId) return;
+    authFetch(`/partidos/${matchId}`).then((data: any) => {
+      setMatchData(data);
+      setLocalScore(data.marcadorLocal || 0);
+      setVisitorScore(data.marcadorVisitante || 0);
+    }).catch(console.error);
+  }, [matchId]);
 
   // Socket connection
   useEffect(() => {
@@ -247,16 +258,7 @@ export const BroadcastPage = () => {
       socket.off('disconnect', onDisconnect);
       socket.off('score:updated', onScoreUpdate);
     };
-  }, [matchId, navigate]);
-
-  // Load match data
-  const loadMatchData = () => {
-    authFetch(`/partidos/${matchId}`).then((data: any) => {
-      setMatchData(data);
-      setLocalScore(data.marcadorLocal || 0);
-      setVisitorScore(data.marcadorVisitante || 0);
-    }).catch(console.error);
-  };
+  }, [matchId, navigate, loadMatchData]);
 
   // Update program video when active slot changes
   useEffect(() => {
@@ -296,7 +298,7 @@ export const BroadcastPage = () => {
       programVideoRef.current.srcObject = null;
       console.log('[Broadcast] programVideo cleared (no activeSlot)');
     }
-  }, [activeSlot, streams]);
+  }, [activeSlot, streams, audioEnabled]);
 
   // Update audio mute when audioEnabled changes
   useEffect(() => {

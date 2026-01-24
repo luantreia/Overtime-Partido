@@ -14,17 +14,11 @@
  * - Local preview
  */
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { socket } from '../../../services/socket';
 import { useWebRTCCamera, CaptureSource } from '../../../shared/hooks/useWebRTCCamera';
 import type { CameraSlot, VideoQuality } from '../../../shared/types/camera.types';
-
-const QUALITY_LABELS: Record<VideoQuality, string> = {
-  low: '360p',
-  medium: '720p',
-  high: '1080p'
-};
 
 export const CameraCapturePage: React.FC = () => {
   const { matchId, slot } = useParams<{ matchId: string; slot: string }>();

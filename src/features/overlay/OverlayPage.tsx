@@ -90,15 +90,18 @@ export const OverlayPage = () => {
     socket.on('program:offer', handleOffer);
     socket.on('program:ice', handleProgramIce);
 
+    const currentPc = programPcRef.current;
+    const currentVideo = videoRef.current;
+
     return () => {
       socket.off('program:offer', handleOffer);
       socket.off('program:ice', handleProgramIce);
-      if (programPcRef.current) {
-        try { programPcRef.current.close(); } catch (e) {}
+      if (currentPc) {
+        try { currentPc.close(); } catch (e) {}
         programPcRef.current = null;
       }
-      if (videoRef.current) {
-        try { videoRef.current.pause(); videoRef.current.srcObject = null; } catch (e) {}
+      if (currentVideo) {
+        try { currentVideo.pause(); currentVideo.srcObject = null; } catch (e) {}
       }
     };
   }, [showVideo, isSocketConnected, matchId, forceReconnect]);
@@ -268,13 +271,7 @@ export const OverlayPage = () => {
       socket.off('camera:switched');
       // socket.disconnect(); // Removed to prevent aggressive disconnection
     };
-  }, [matchId]);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
+  }, [matchId, overlayActions]);
 
   if (!matchId) return (
     <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
