@@ -47,9 +47,6 @@ export const ControlPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Debounce hook for preventing double-clicks
-  const { debounce } = useDebounce(600);
-
   const matchDurationMinutes = 20; // duración base por periodo
 
   const { state: timersState, controllerActions } = useDriftFreeTimers({
@@ -62,6 +59,18 @@ export const ControlPage: React.FC = () => {
   });
 
   const { matchTime, setTimer, suddenDeathTime, period, isMatchRunning, isSetRunning, isSuddenDeathActive, suddenDeathMode } = timersState;
+
+  // Refs to avoid infinite dependency loops in callbacks
+  const matchDataRef = useRef<any>(null);
+  useEffect(() => { matchDataRef.current = matchData; }, [matchData]);
+  
+  const periodRef = useRef(period);
+  useEffect(() => { periodRef.current = period; }, [period]);
+
+  const hasInitialized = useRef(false);
+
+  // Debounce hook for preventing double-clicks
+  const { debounce } = useDebounce(600);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60); const s = seconds % 60; return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
@@ -85,9 +94,6 @@ export const ControlPage: React.FC = () => {
         const elapsedSinceStart = Math.floor((Date.now() - startTs) / 1000);
         const restored = Math.max(0, matchDuration - elapsedSinceStart);
         controllerActions?.setMatchTimeManual(restored);
-        
-        // If match should be running but isn't, we can't force it here without starting the internal server timer.
-        // But if the server timer is already running (data.timerMatchRunning), it will sync via socket too.
       } else if (data.timerMatchValue !== undefined) {
         let restored = data.timerMatchValue;
         if (data.timerMatchRunning && data.timerMatchLastUpdate) {
@@ -97,11 +103,11 @@ export const ControlPage: React.FC = () => {
         controllerActions?.setMatchTimeManual(restored);
       }
       
-      if (data.period && data.period !== period) controllerActions?.changePeriod(data.period);
+      if (data.period && data.period !== periodRef.current) controllerActions?.changePeriod(data.period);
     } catch (err) {
       console.error(err);
     }
-  }, [matchId, controllerActions, period]);
+  }, [matchId, controllerActions]);
 
   const loadSets = useCallback(async (restore = false) => {
     if (!matchId) return;
@@ -112,7 +118,7 @@ export const ControlPage: React.FC = () => {
       let localPts = 0, visitPts = 0;
       data.forEach(s => {
         if (s.estadoSet !== 'finalizado') return;
-        if (matchData?.modalidad === 'Cloth') {
+        if (matchDataRef.current?.modalidad === 'Cloth') {
           if (s.ganadorSet === 'local') localPts += 2; else if (s.ganadorSet === 'visitante') visitPts += 2; else if (s.ganadorSet === 'empate') { localPts++; visitPts++; }
         } else {
           if (s.ganadorSet === 'local') localPts++; else if (s.ganadorSet === 'visitante') visitPts++;
@@ -122,26 +128,25 @@ export const ControlPage: React.FC = () => {
       
       if (restore) {
         // Special logic for Ranked Match sync
-        if (matchData?.isRanked && matchData?.rankedMeta?.startTime) {
+        const currentMatchData = matchDataRef.current;
+        if (currentMatchData?.isRanked && currentMatchData?.rankedMeta?.startTime) {
           const totalFinishedDuration = data.reduce((sum, s) => {
             if (s.estadoSet !== 'finalizado') return sum;
             return sum + (s.duracionReal || (s as any).lastSetDuration || 0);
           }, 0);
           
-          const matchStartTs = new Date(matchData.rankedMeta.startTime).getTime();
+          const matchStartTs = new Date(currentMatchData.rankedMeta.startTime).getTime();
           const totalElapsed = Math.floor((Date.now() - matchStartTs) / 1000);
           const currentSetElapsed = Math.max(0, totalElapsed - totalFinishedDuration);
-          const setLimit = matchData.rankedMeta.setDuration || 180;
+          const setLimit = currentMatchData.rankedMeta.setDuration || 180;
 
           if (currentSetElapsed >= setLimit) {
             controllerActions?.setSetTimeManual(0);
             controllerActions?.setSuddenDeathMode(true);
             controllerActions?.startSuddenDeath();
-            // In sudden death, we might want to sync the SD elapsed time too
-            // TODO: adjustSDManual(currentSetElapsed - setLimit) if hook supports it
           } else {
             controllerActions?.setSetTimeManual(setLimit - currentSetElapsed);
-            if (matchData.timerMatchRunning) controllerActions?.startSetIfNeeded();
+            if (currentMatchData.timerMatchRunning) controllerActions?.startSetIfNeeded();
           }
         } else {
           // Standard restoration logic
@@ -154,7 +159,6 @@ export const ControlPage: React.FC = () => {
             }
             controllerActions?.setSetTimeManual(restoredSet);
             if (current.timerSetRunning) controllerActions?.startSetIfNeeded();
-            // ... SD logic ...
           }
         }
       }
@@ -163,13 +167,14 @@ export const ControlPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [matchId, matchData, controllerActions]);
+  }, [matchId, controllerActions]);
 
   useEffect(() => { if (!matchId) navigate('/config'); }, [matchId, navigate]);
   
   useEffect(() => {
     const initialize = async () => {
-      if (!matchId) return;
+      if (!matchId || hasInitialized.current) return;
+      hasInitialized.current = true;
       setIsLoading(true);
       try {
         await loadMatchData();

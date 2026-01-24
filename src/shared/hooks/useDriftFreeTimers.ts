@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo, useRef } from 'react';
 import type { Socket } from 'socket.io-client';
 
 // Mode distinguishes controller (authoritative) vs overlay (passive consumer)
+// ... (rest of imports/types)
 export type DriftTimerMode = 'controller' | 'overlay';
 
 export interface DriftTimersState {
@@ -60,6 +61,10 @@ export const useDriftFreeTimers = (params: UseDriftFreeTimersParams) => {
     serverTimestamp: undefined
   }));
 
+  // Refs to state for stable callbacks
+  const stateRef = useRef(state);
+  useEffect(() => { stateRef.current = state; }, [state]);
+
   // Listen for server updates (Source of Truth)
   useEffect(() => {
     if (!matchId) return;
@@ -97,37 +102,10 @@ export const useDriftFreeTimers = (params: UseDriftFreeTimersParams) => {
   }, [mode, matchId, socket]);
 
   const startOrResume = useCallback(() => {
-    // Logic to decide what to start?
-    // For simplicity, start match. If set is pending, maybe start set too?
-    // The server handles specific starts.
-    // Let's assume "Play" button starts Match Timer.
     sendCommand('START_MATCH');
-    // Also start set if needed?
-    // If we want to start everything that was running, we might need a RESUME_ALL command.
-    // But usually Play starts the match clock.
-    // If set clock should run, it should be started explicitly or linked.
-    // For now, let's send START_MATCH.
-    // If the user wants to start the set, they usually click the set timer button?
-    // Or does Play start both?
-    // In previous logic: isSetRunning = s.isSetRunning || (s.suddenDeathMode ? s.setTimer > 0 : s.setTimer > 0)
-    // So it tried to resume set if it had time.
-    // Let's send START_MATCH and START_SET (if applicable).
-    // Actually, let's just send START_MATCH and let the user manage the set separately if needed, 
-    // OR send a composite command.
-    // Let's stick to START_MATCH for now.
-    // Wait, if I want to resume the set, I should send START_SET too.
-    // But I don't know if I should resume it without checking state.
-    // Let's send START_MATCH.
-    // If the set was running, it should be resumed?
-    // The server doesn't know "was running".
-    // Let's add logic: if setTimer > 0, send START_SET too?
-    // Better: The UI has separate controls or a master control?
-    // The UI has a big Play/Pause button.
-    // Let's send START_MATCH.
-    // And if setTimer > 0, send START_SET.
-    if (state.setTimer > 0) sendCommand('START_SET');
-    if (state.suddenDeathMode) sendCommand('START_SUDDEN_DEATH'); // If mode active?
-  }, [sendCommand, state.setTimer, state.suddenDeathMode]);
+    if (stateRef.current.setTimer > 0) sendCommand('START_SET');
+    if (stateRef.current.suddenDeathMode) sendCommand('START_SUDDEN_DEATH');
+  }, [sendCommand]);
 
   const pauseAll = useCallback(() => {
     sendCommand('PAUSE_ALL');
@@ -158,10 +136,10 @@ export const useDriftFreeTimers = (params: UseDriftFreeTimersParams) => {
   }, [sendCommand]);
 
   const startSetIfNeeded = useCallback(() => {
-    if (state.setTimer > 0) {
+    if (stateRef.current.setTimer > 0) {
         sendCommand('START_SET');
     }
-  }, [sendCommand, state.setTimer]);
+  }, [sendCommand]);
 
   const resetAll = useCallback(() => {
     sendCommand('RESET_ALL');
@@ -176,7 +154,23 @@ export const useDriftFreeTimers = (params: UseDriftFreeTimersParams) => {
     // No-op, handled by useEffect
   }, []);
 
-  const controllerActions: ControllerActions | undefined = mode === 'controller' ? {
+  const controllerActions: ControllerActions | undefined = useMemo(() => {
+    if (mode !== 'controller') return undefined;
+    return {
+      startOrResume,
+      pauseAll,
+      pauseSetOnly,
+      setMatchTimeManual,
+      setSetTimeManual,
+      changePeriod,
+      setSuddenDeathMode,
+      startSuddenDeath,
+      stopSuddenDeath,
+      startSetIfNeeded,
+      resetAll
+    };
+  }, [
+    mode,
     startOrResume,
     pauseAll,
     pauseSetOnly,
@@ -188,9 +182,12 @@ export const useDriftFreeTimers = (params: UseDriftFreeTimersParams) => {
     stopSuddenDeath,
     startSetIfNeeded,
     resetAll
-  } : undefined;
+  ]);
 
-  const overlayActions: OverlayActions | undefined = mode === 'overlay' ? { applySocketTimerUpdate } : undefined;
+  const overlayActions: OverlayActions | undefined = useMemo(() => {
+    if (mode !== 'overlay') return undefined;
+    return { applySocketTimerUpdate };
+  }, [mode, applySocketTimerUpdate]);
 
   return { state, controllerActions, overlayActions };
 };
