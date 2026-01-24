@@ -44,10 +44,21 @@ export const authFetch = async <TResponse>(
 
   const serializedBody = serializeBody(body);
 
+  // Avoid double /api prefix if API_BASE_URL already ends with /api and endpoint also starts with /api/
+  const normalizeEndpoint = (raw: string) => {
+    let ep = raw;
+    const baseTrimmed = API_BASE_URL.replace(/\/+$/,'');
+    if (baseTrimmed.endsWith('/api') && ep.startsWith('/api/')) {
+      ep = ep.slice(4); // remove leading /api
+    }
+    return ep;
+  };
+
   const doRequest = async (authHeader?: string) => {
     const hdrs = new Headers(fetchHeaders);
     if (authHeader) hdrs.set('Authorization', authHeader);
-    const resp = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const finalEndpoint = normalizeEndpoint(endpoint);
+    const resp = await fetch(`${API_BASE_URL}${finalEndpoint}`, {
       method: method as FetchMethod,
       headers: hdrs,
       body: serializedBody,

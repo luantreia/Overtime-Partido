@@ -369,7 +369,7 @@ export const ControlPage: React.FC = () => {
       }));
 
       // 3. Call the finalize endpoint
-      const res: any = await authFetch(`/api/ranked/match/${matchId}/finalize`, {
+      const res: any = await authFetch(`/ranked/match/${matchId}/finalize`, {
         method: 'POST',
         body: {
           marcadorLocal: localScore,
