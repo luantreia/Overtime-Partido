@@ -206,7 +206,7 @@ export const BroadcastPage = () => {
       });
       currentPCs.clear();
     };
-  }, [socket, matchId, activeSlot]);
+  }, [matchId, activeSlot]);
 
   // Load match data
   const loadMatchData = useCallback(() => {

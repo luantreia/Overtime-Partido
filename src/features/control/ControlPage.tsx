@@ -202,13 +202,6 @@ export const ControlPage: React.FC = () => {
   /* const saveTimerState = ... */
 
 
-  const updateGlobalScore = async (newLocal: number, newVisitor: number) => {
-    if (!matchId) return;
-    setLocalScore(newLocal); setVisitorScore(newVisitor);
-    socket.emit('score:update', { matchId, localScore: newLocal, visitorScore: newVisitor });
-    try { await authFetch(`/partidos/${matchId}`, { method: 'PUT', body: { marcadorLocal: newLocal, marcadorVisitante: newVisitor } }); } catch (e) { console.error('Error guardando marcador', e); }
-  };
-
   const startNewSetInternal = async (autoStart = false) => {
     if (!matchId || isSaving) return;
     const nextSetNumber = sets.length + 1;

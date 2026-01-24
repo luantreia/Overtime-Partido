@@ -503,7 +503,7 @@ export function useWebRTCCamera({
       }
       stopCapture();
     };
-  }, []);
+  }, [stopCapture]);
 
   return {
     localStream,
