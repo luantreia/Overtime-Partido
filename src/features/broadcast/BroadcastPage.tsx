@@ -10,7 +10,7 @@
  * URL: /broadcast?matchId=xxx
  */
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { socket } from '../../services/socket';
 import { authFetch } from '../../shared/utils/authFetch';
