@@ -31,7 +31,7 @@ export const BroadcastPage = () => {
   const [matchData, setMatchData] = useState<any>(null);
   const [showVideo, setShowVideo] = useState(true);
   const [copiedSlot, setCopiedSlot] = useState<string | null>(null);
-  const [showScoreboardOverlay, setShowScoreboardOverlay] = useState(true);
+  const [showOverlay, setShowOverlay] = useState(true);
   const [showOverlayTransparent, setShowOverlayTransparent] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(false);
   
@@ -593,13 +593,13 @@ export const BroadcastPage = () => {
                 <span className="text-xs text-slate-300">Scoreboard</span>
                 <button
                   onClick={() => {
-                    const next = !showScoreboardOverlay;
-                    setShowScoreboardOverlay(next);
-                    socket.emit('overlay:config', { matchId, showScoreboard: next });
+                    const next = !showOverlay;
+                    setShowOverlay(next);
+                    socket?.emit('overlay:toggle', { matchId, visible: next });
                   }}
-                  className={`px-2 py-1 rounded text-xs ${showScoreboardOverlay ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'}`}
+                  className={`px-2 py-1 rounded text-xs ${showOverlay ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'}`}
                 >
-                  {showScoreboardOverlay ? 'Visible' : 'Hidden'}
+                  {showOverlay ? 'Visible' : 'Hidden'}
                 </button>
               </label>
               <label className="flex items-center justify-between">
