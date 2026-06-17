@@ -280,7 +280,7 @@ export const BroadcastPage = () => {
       socket.off('disconnect', onDisconnect);
       socket.off('score:updated', onScoreUpdate);
     };
-  }, [matchId, navigate, loadMatchData]);
+  }, [matchId, navigate, loadMatchData, roomParam]);
 
   // Update program video when active slot changes
   useEffect(() => {
