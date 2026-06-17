@@ -39,7 +39,11 @@ export const OverlayPage = () => {
     socket.on('room:state', onRoomState);
     socket.on('room:match_changed', onRoomChanged);
     socket.on('connect', joinRoom);
-    if (socket.connected) joinRoom();
+    if (socket.connected) {
+      joinRoom();
+    } else {
+      socket.connect();
+    }
     return () => {
       socket.off('room:state', onRoomState);
       socket.off('room:match_changed', onRoomChanged);
