@@ -23,7 +23,9 @@ const ALL_SLOTS: CameraSlot[] = ['cam1', 'cam2', 'cam3', 'cam4'];
 export const BroadcastPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const matchId = searchParams.get('matchId');
+  const roomParam = searchParams.get('room');
+  const [currentMatchId, setCurrentMatchId] = useState<string | null>(searchParams.get('matchId'));
+  const matchId = currentMatchId;
 
   const [localScore, setLocalScore] = useState(0);
   const [visitorScore, setVisitorScore] = useState(0);
@@ -53,6 +55,26 @@ export const BroadcastPage = () => {
 
   // Program stream peer connections for viewers
   const programPCsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
+
+  // Room-based routing
+  useEffect(() => {
+    if (!roomParam) return;
+    const joinRoom = () => socket.emit('room:join', { roomId: roomParam });
+    authFetch<any>(`/api/rooms/${roomParam}`).then((d: any) => {
+      if (d?.matchId) setCurrentMatchId(d.matchId);
+    }).catch(() => {});
+    const onRoomState = (d: any) => { if (d.roomId === roomParam) setCurrentMatchId(d.matchId || null); };
+    const onRoomChanged = (d: any) => { if (d.roomId === roomParam) setCurrentMatchId(d.matchId || null); };
+    socket.on('room:state', onRoomState);
+    socket.on('room:match_changed', onRoomChanged);
+    socket.on('connect', joinRoom);
+    if (socket.connected) joinRoom();
+    return () => {
+      socket.off('room:state', onRoomState);
+      socket.off('room:match_changed', onRoomChanged);
+      socket.off('connect', joinRoom);
+    };
+  }, [roomParam]);
 
   useEffect(() => {
     if (!socket) return;
@@ -221,7 +243,7 @@ export const BroadcastPage = () => {
   // Socket connection
   useEffect(() => {
     if (!matchId) {
-      navigate('/config');
+      if (!roomParam) navigate('/config');
       return;
     }
 
@@ -337,7 +359,13 @@ export const BroadcastPage = () => {
     setTimeout(() => setCopiedSlot(null), 2000);
   };
 
-  if (!matchId) return null;
+  if (!matchId) return (
+    <div className="h-screen bg-slate-900 flex items-center justify-center text-white flex-col gap-3">
+      <div className="text-4xl animate-pulse">📡</div>
+      <p className="text-lg font-bold">Sala: <span className="text-blue-400">{roomParam || '—'}</span></p>
+      <p className="text-slate-500 text-sm">Esperando que se asigne un partido...</p>
+    </div>
+  );
   if (!matchData) return <div className="h-screen bg-slate-900 flex items-center justify-center text-white">Cargando partido...</div>;
 
   const liveCameras = cameras.filter(c => c.status === 'live').length;

@@ -7,7 +7,9 @@ import { useDriftFreeTimers } from '../../shared/hooks/useDriftFreeTimers';
 
 export const OverlayPage = () => {
   const [searchParams] = useSearchParams();
-  const matchId = searchParams.get('matchId');
+  const roomParam = searchParams.get('room');
+  const [currentMatchId, setCurrentMatchId] = useState<string | null>(searchParams.get('matchId'));
+  const matchId = currentMatchId;
   const transparent = searchParams.get('transparent') !== 'false';
   const showVideoParam = searchParams.get('showVideo');
   // showVideo explicit param if provided, otherwise true (show video by default)
@@ -24,6 +26,26 @@ export const OverlayPage = () => {
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [isDataFlowing, setIsDataFlowing] = useState(false);
   const [forceReconnect, setForceReconnect] = useState(0);
+
+  // Room-based routing: auto-follow the matchId assigned to this room
+  useEffect(() => {
+    if (!roomParam) return;
+    const joinRoom = () => socket.emit('room:join', { roomId: roomParam });
+    authFetch<any>(`/api/rooms/${roomParam}`).then((d: any) => {
+      if (d?.matchId) setCurrentMatchId(d.matchId);
+    }).catch(() => {});
+    const onRoomState = (d: any) => { if (d.roomId === roomParam) setCurrentMatchId(d.matchId || null); };
+    const onRoomChanged = (d: any) => { if (d.roomId === roomParam) setCurrentMatchId(d.matchId || null); };
+    socket.on('room:state', onRoomState);
+    socket.on('room:match_changed', onRoomChanged);
+    socket.on('connect', joinRoom);
+    if (socket.connected) joinRoom();
+    return () => {
+      socket.off('room:state', onRoomState);
+      socket.off('room:match_changed', onRoomChanged);
+      socket.off('connect', joinRoom);
+    };
+  }, [roomParam]);
   
   // Video ref for program stream
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -276,9 +298,19 @@ export const OverlayPage = () => {
   if (!matchId) return (
     <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
       <div className="text-center">
-        <h1 className="text-2xl font-bold mb-4">⚠️ Falta ID del Partido</h1>
-        <p className="mb-4">No se especificó qué partido mostrar.</p>
-        <p className="text-sm text-gray-400">Usa el botón "Overlay" desde la pantalla de Configuración o Botonera.</p>
+        {roomParam ? (
+          <>
+            <div className="mb-4 text-4xl animate-pulse">📡</div>
+            <h1 className="text-xl font-bold mb-2">Sala: <span className="text-blue-400">{roomParam}</span></h1>
+            <p className="text-gray-400">Esperando que se asigne un partido...</p>
+          </>
+        ) : (
+          <>
+            <h1 className="text-2xl font-bold mb-4">⚠️ Falta ID del Partido</h1>
+            <p className="mb-4">No se especificó qué partido mostrar.</p>
+            <p className="text-sm text-gray-400">Usá <code>?matchId=xxx</code> o <code>?room=nombre-sala</code> en la URL.</p>
+          </>
+        )}
       </div>
     </div>
   );
