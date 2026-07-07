@@ -49,9 +49,9 @@ function AppContent() {
                 <div className="text-xl font-bold">Overtime Gestión</div>
                 <div className="flex items-center space-x-4">
                   <Link to="/config" className="hover:text-blue-200">Configuración</Link>
-                  {/* <Link to="/control" className="hover:text-blue-200">Botonera</Link> */}
-                  {/* <Link to="/stats" className="hover:text-blue-200">Estadísticas</Link> */}
-                  {/* <Link to="/overlay" className="hover:text-blue-200" target="_blank">Overlay (OBS)</Link> */}
+                  <Link to="/control" className="hover:text-blue-200">Botonera</Link>
+                  <Link to="/stats" className="hover:text-blue-200">Estadísticas</Link>
+                  <Link to="/overlay" className="hover:text-blue-200" target="_blank">Overlay (OBS)</Link>
                   <div className="ml-4 flex items-center gap-2 border-l pl-4 border-blue-400">
                     <span className="text-sm">{user?.nombre}</span>
                     <button onClick={logout} className="text-sm bg-blue-700 px-2 py-1 rounded hover:bg-blue-800">Salir</button>
