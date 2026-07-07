@@ -5,7 +5,8 @@ import { authFetch } from '../../shared/utils/authFetch';
 import { useToast } from '../../shared/components/Toast/ToastProvider';
 import OverlayScoreboard from '../overlay/OverlayScoreboard';
 import { useDriftFreeTimers } from '../../shared/hooks/useDriftFreeTimers';
-import { confirmPeriodChange } from '../../shared/utils/periodHelper';
+import ConfirmModal from '../../shared/components/ConfirmModal/ConfirmModal';
+import ModalBase from '../../shared/components/ModalBase/ModalBase';
 import { listSets, createSet, finishSetApi, reopenSetApi, deleteSetApi, changeWinnerApi, SetPartidoDTO } from '../../shared/features/partido/services/setService';
 import { showOverlay, hideOverlay } from '../../shared/services/overlayService';
 
@@ -46,7 +47,16 @@ export const ControlPage: React.FC = () => {
   const [showSetTimerOnOverlay, setShowSetTimerOnOverlay] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  
+  const [confirmAction, setConfirmAction] = useState<
+    | { type: 'deleteSet'; setId: string }
+    | { type: 'reopenSet'; setId: string }
+    | { type: 'resetMatch' }
+    | { type: 'finalizeMatch' }
+    | { type: 'changePeriod'; newPeriod: number }
+    | null
+  >(null);
+  const [timeEditModal, setTimeEditModal] = useState<{ kind: 'match' | 'set'; value: string } | null>(null);
+
   const matchDurationMinutes = 20; // duración base por periodo
 
   const { state: timersState, controllerActions } = useDriftFreeTimers({
@@ -299,11 +309,11 @@ export const ControlPage: React.FC = () => {
   };
   const finishSet = debounce(finishSetInternal, 'finishSet');
 
-  const deleteSetInternal = async (setId: string) => { if (!window.confirm('¿Eliminar este set?')) return; setIsSaving(true); try { await deleteSetApi(setId); addToast({ type: 'success', message: 'Set eliminado' }); await loadSets(); } catch { addToast({ type: 'error', message: 'Error al eliminar set' }); } finally { setIsSaving(false); } };
-  const deleteSet = debounce(deleteSetInternal, 'deleteSet');
-  
-  const reopenSetInternal = async (setId: string) => { if (!window.confirm('¿Reabrir este set?')) return; setIsSaving(true); try { await reopenSetApi(setId); addToast({ type: 'success', message: 'Set reabierto' }); await loadSets(); } catch { addToast({ type: 'error', message: 'Error al reabrir set' }); } finally { setIsSaving(false); } };
-  const reopenSet = debounce(reopenSetInternal, 'reopenSet');
+  const deleteSetInternal = async (setId: string) => { setIsSaving(true); try { await deleteSetApi(setId); addToast({ type: 'success', message: 'Set eliminado' }); await loadSets(); } catch { addToast({ type: 'error', message: 'Error al eliminar set' }); } finally { setIsSaving(false); } };
+  const deleteSet = (setId: string) => setConfirmAction({ type: 'deleteSet', setId });
+
+  const reopenSetInternal = async (setId: string) => { setIsSaving(true); try { await reopenSetApi(setId); addToast({ type: 'success', message: 'Set reabierto' }); await loadSets(); } catch { addToast({ type: 'error', message: 'Error al reabrir set' }); } finally { setIsSaving(false); } };
+  const reopenSet = (setId: string) => setConfirmAction({ type: 'reopenSet', setId });
   
   const changeSetWinnerInternal = async (setId: string, newWinner: 'local' | 'visitante' | 'empate') => { setIsSaving(true); try { await changeWinnerApi(setId, newWinner); addToast({ type: 'success', message: 'Ganador actualizado' }); await loadSets(); } catch { addToast({ type: 'error', message: 'Error al actualizar ganador' }); } finally { setIsSaving(false); } };
   const changeSetWinner = debounce(changeSetWinnerInternal, 'changeSetWinner');
@@ -315,6 +325,7 @@ export const ControlPage: React.FC = () => {
     const overlayType: 'TIMEOUT' | 'REVIEW' = reason === 'TIMEOUT' ? 'TIMEOUT' : 'REVIEW';
     let subtitle = reason === 'TIMEOUT' ? `Pedido por ${team === 'local' ? matchData.equipoLocal.nombre : matchData.equipoVisitante.nombre}` : 'Juego Detenido';
     showOverlay(socket, matchId, overlayType, { title: overlayType === 'TIMEOUT' ? 'TIEMPO FUERA' : 'REVISIÓN ARBITRAL', subtitle });
+    addToast({ type: 'success', message: overlayType === 'TIMEOUT' ? 'Time out enviado al overlay' : 'Revisión enviada al overlay' });
   };
 
   const toggleMatch = async () => {
@@ -340,9 +351,13 @@ export const ControlPage: React.FC = () => {
     }
   };
 
-  const resetMatch = async () => {
+  const resetMatch = () => {
     if (!matchId) return;
-    if (!window.confirm('⚠️ PELIGRO: ¿Reiniciar partido?')) return;
+    setConfirmAction({ type: 'resetMatch' });
+  };
+
+  const resetMatchInternal = async () => {
+    if (!matchId) return;
     for (const s of sets) { await authFetch(`/set-partido/${s._id}`, { method: 'DELETE' }); }
     controllerActions?.resetAll();
     setLocalScore(0); setVisitorScore(0); setSets([]);
@@ -352,10 +367,13 @@ export const ControlPage: React.FC = () => {
     addToast({ type: 'success', message: 'Partido Reiniciado' });
   };
 
-  const finalizeMatch = async () => {
+  const finalizeMatch = () => {
     if (!matchId || !matchData) return;
-    if (!window.confirm('¿Finalizar el partido y subir resultados permanentes?')) return;
-    
+    setConfirmAction({ type: 'finalizeMatch' });
+  };
+
+  const finalizeMatchInternal = async () => {
+    if (!matchId || !matchData) return;
     setIsSaving(true);
     try {
       // 1. Stop all timers
@@ -396,10 +414,59 @@ export const ControlPage: React.FC = () => {
     }
   };
 
-  const updateMatchTimeManual = () => { const val = prompt('Tiempo partido (min, ej 15.5):'); if (val && !isNaN(+val)) controllerActions?.setMatchTimeManual(Math.floor(parseFloat(val) * 60)); };
-  const updateSetTimeManual = () => { const val = prompt('Tiempo set (min, ej 3):'); if (val && !isNaN(+val)) controllerActions?.setSetTimeManual(Math.floor(parseFloat(val) * 60)); };
-  const changePeriod = (newPeriod: number) => { if (!confirmPeriodChange(period, newPeriod)) return; controllerActions?.changePeriod(newPeriod); addToast({ type: 'info', message: `Cambiado a ${newPeriod}º Tiempo` }); };
-  
+  const updateMatchTimeManual = () => setTimeEditModal({ kind: 'match', value: '' });
+  const updateSetTimeManual = () => setTimeEditModal({ kind: 'set', value: '' });
+
+  const handleConfirmTimeEdit = () => {
+    if (!timeEditModal) return;
+    const val = timeEditModal.value;
+    if (val && !isNaN(+val)) {
+      const seconds = Math.floor(parseFloat(val) * 60);
+      if (timeEditModal.kind === 'match') controllerActions?.setMatchTimeManual(seconds);
+      else controllerActions?.setSetTimeManual(seconds);
+    }
+    setTimeEditModal(null);
+  };
+
+  const changePeriod = (newPeriod: number) => {
+    if (period === newPeriod) return;
+    setConfirmAction({ type: 'changePeriod', newPeriod });
+  };
+
+  const executeConfirmedAction = async () => {
+    const action = confirmAction;
+    setConfirmAction(null);
+    if (!action) return;
+    switch (action.type) {
+      case 'deleteSet':
+        await debounce(deleteSetInternal, 'deleteSet')(action.setId);
+        break;
+      case 'reopenSet':
+        await debounce(reopenSetInternal, 'reopenSet')(action.setId);
+        break;
+      case 'resetMatch':
+        await resetMatchInternal();
+        break;
+      case 'finalizeMatch':
+        await finalizeMatchInternal();
+        break;
+      case 'changePeriod':
+        controllerActions?.changePeriod(action.newPeriod);
+        addToast({ type: 'info', message: `Cambiado a ${action.newPeriod}º Tiempo` });
+        break;
+      default:
+        break;
+    }
+  };
+
+  const CONFIRM_ACTION_COPY: Record<string, { title: string; message: string; confirmLabel: string; variant: 'danger' | 'primary' | 'default' }> = {
+    deleteSet: { title: 'Eliminar set', message: '¿Eliminar este set? Esta acción no se puede deshacer.', confirmLabel: 'Eliminar', variant: 'danger' },
+    reopenSet: { title: 'Reabrir set', message: '¿Reabrir este set?', confirmLabel: 'Reabrir', variant: 'primary' },
+    resetMatch: { title: 'Reiniciar partido', message: '⚠️ PELIGRO: se van a borrar todos los sets y el marcador de este partido. ¿Reiniciar partido?', confirmLabel: 'Reiniciar', variant: 'danger' },
+    finalizeMatch: { title: 'Finalizar partido', message: '¿Finalizar el partido y subir resultados permanentes?', confirmLabel: 'Finalizar', variant: 'primary' },
+    changePeriod: { title: 'Cambiar de tiempo', message: `¿Cambiar de tiempo? Esto reiniciará el reloj del partido.`, confirmLabel: 'Cambiar', variant: 'primary' },
+  };
+
   const toggleOverlaySetTimer = (e: React.ChangeEvent<HTMLInputElement>) => {
     const enabled = e.target.checked;
     setShowSetTimerOnOverlay(enabled);
@@ -420,7 +487,7 @@ export const ControlPage: React.FC = () => {
     <div className="h-screen bg-slate-50 flex flex-col overflow-hidden">
       <header className="bg-white border-b border-slate-200 px-4 py-2 flex justify-between items-center shrink-0 h-12">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/config')} className="text-slate-400 hover:text-slate-600" aria-label="Volver"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg></button>
+          <button onClick={() => navigate('/config')} className="text-slate-400 hover:text-slate-600 p-2 -m-2" aria-label="Volver"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg></button>
           <div className="flex items-baseline gap-2"><h1 className="text-sm font-bold text-slate-800">Mesa de Control</h1><p className="text-xs text-slate-500 hidden sm:block">{matchData.equipoLocal?.nombre} vs {matchData.equipoVisitante?.nombre}</p></div>
         </div>
         <div className="flex items-center gap-2">
@@ -451,8 +518,8 @@ export const ControlPage: React.FC = () => {
                 <button onClick={() => changePeriod(2)} className={`text-xs font-bold px-3 py-1.5 rounded transition-colors ${period === 2 ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>2T</button>
               </div>
               <div className="flex items-center gap-4 sm:gap-6 order-3 sm:order-2 w-full sm:w-auto justify-center sm:justify-end mt-1 sm:mt-0 border-t sm:border-t-0 border-slate-100 pt-2 sm:pt-0">
-                <div className="flex flex-col items-center sm:items-end"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Partido</span><div className="flex items-center gap-2"><span className={`font-mono text-3xl sm:text-4xl font-bold leading-none ${isMatchRunning ? 'text-slate-800' : 'text-slate-400'}`}>{formatTime(matchTime)}</span><button onClick={updateMatchTimeManual} className="text-slate-300 hover:text-slate-500" title="Editar Tiempo"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button></div></div>
-                <div className="flex flex-col items-center sm:items-end border-l border-slate-200 pl-4 sm:pl-6"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Set Actual</span><div className="flex items-center gap-2"><span className={`font-mono text-3xl sm:text-4xl font-bold leading-none ${isSuddenDeathActive ? 'text-purple-600 animate-pulse' : (isSetRunning ? 'text-slate-800' : 'text-slate-400')}`}>{isSuddenDeathActive ? `+${formatTime(suddenDeathTime)}` : formatTime(setTimer)}</span>{!isSuddenDeathActive && <button onClick={updateSetTimeManual} className="text-slate-300 hover:text-slate-500" title="Editar Tiempo Set"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>}</div></div>
+                <div className="flex flex-col items-center sm:items-end"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Partido</span><div className="flex items-center gap-2"><span className={`font-mono text-3xl sm:text-4xl font-bold leading-none ${isMatchRunning ? 'text-slate-800' : 'text-slate-400'}`}>{formatTime(matchTime)}</span><button onClick={updateMatchTimeManual} className="text-slate-300 hover:text-slate-500 p-2 -m-2" title="Editar Tiempo"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button></div></div>
+                <div className="flex flex-col items-center sm:items-end border-l border-slate-200 pl-4 sm:pl-6"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Set Actual</span><div className="flex items-center gap-2"><span className={`font-mono text-3xl sm:text-4xl font-bold leading-none ${isSuddenDeathActive ? 'text-purple-600 animate-pulse' : (isSetRunning ? 'text-slate-800' : 'text-slate-400')}`}>{isSuddenDeathActive ? `+${formatTime(suddenDeathTime)}` : formatTime(setTimer)}</span>{!isSuddenDeathActive && <button onClick={updateSetTimeManual} className="text-slate-300 hover:text-slate-500 p-2 -m-2" title="Editar Tiempo Set"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>}</div></div>
               </div>
               <button onClick={toggleMatch} className={`order-2 sm:order-3 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all shadow-lg shrink-0 ${isMatchRunning ? 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700' : 'bg-green-500 text-white hover:bg-green-600 hover:scale-105 hover:shadow-green-200'}`} title={isMatchRunning ? 'Pausar' : 'Iniciar / Reanudar'}>{isMatchRunning ? <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg> : <svg className="w-6 h-6 ml-0.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" /></svg>}</button>
             </div>
@@ -463,15 +530,17 @@ export const ControlPage: React.FC = () => {
                 <button onClick={() => pauseMatch('TIMEOUT','visitante')} className="bg-orange-100 text-orange-800 text-xs font-bold py-2 rounded hover:bg-orange-200">Time Out Visita</button>
                 <button onClick={() => pauseMatch('REVIEW')} className="col-span-2 bg-purple-100 text-purple-800 text-xs font-bold py-2 rounded hover:bg-purple-200">Revisión Arbitral</button>
               </div>
-              <div className="mt-auto pt-2 border-t border-slate-100 space-y-2">
-                <button 
-                  onClick={finalizeMatch} 
+              <div className="mt-auto pt-2 border-t border-slate-100">
+                <button
+                  onClick={finalizeMatch}
                   disabled={isSaving}
                   className="w-full bg-emerald-600 text-white font-black py-3 rounded-lg hover:bg-emerald-700 transition shadow-md uppercase tracking-widest text-sm disabled:opacity-50"
                 >
                   {isSaving ? 'Guardando...' : '🏁 Finalizar Partido'}
                 </button>
-                <button onClick={resetMatch} className="w-full text-[10px] text-red-400 hover:text-red-600 hover:bg-red-50 py-1 rounded transition-colors uppercase font-bold">⚠️ Reiniciar Partido</button>
+                <div className="flex justify-end mt-3 pt-2 border-t border-dashed border-slate-200">
+                  <button onClick={resetMatch} className="text-[10px] text-red-400 hover:text-red-600 hover:bg-red-50 px-3 py-2 rounded transition-colors uppercase font-bold">⚠️ Reiniciar Partido</button>
+                </div>
               </div>
             </div>
           </div>
@@ -487,9 +556,9 @@ export const ControlPage: React.FC = () => {
                     <div key={s._id} className="p-2 bg-slate-50 rounded border border-slate-100 text-xs group">
                       <div className="flex justify-between items-center mb-1">
                         <span className="font-bold text-slate-600">Set {s.numeroSet}</span>
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => reopenSet(s._id)} className="text-blue-600 hover:bg-blue-100 p-1 rounded" title="Reabrir"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg></button>
-                          <button onClick={() => deleteSet(s._id)} className="text-red-600 hover:bg-red-100 p-1 rounded" title="Eliminar"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+                        <div className="flex gap-1">
+                          <button onClick={() => reopenSet(s._id)} className="text-blue-600 hover:bg-blue-100 p-2 rounded" title="Reabrir"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg></button>
+                          <button onClick={() => deleteSet(s._id)} className="text-red-600 hover:bg-red-100 p-2 rounded" title="Eliminar"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
                         </div>
                       </div>
                       <div className="flex gap-1">
@@ -543,6 +612,56 @@ export const ControlPage: React.FC = () => {
           </div>
         </div>
       </main>
+
+      <ConfirmModal
+        isOpen={!!confirmAction}
+        title={confirmAction ? CONFIRM_ACTION_COPY[confirmAction.type].title : ''}
+        message={confirmAction ? CONFIRM_ACTION_COPY[confirmAction.type].message : ''}
+        confirmLabel={confirmAction ? CONFIRM_ACTION_COPY[confirmAction.type].confirmLabel : 'Confirmar'}
+        variant={confirmAction ? CONFIRM_ACTION_COPY[confirmAction.type].variant : 'default'}
+        onConfirm={executeConfirmedAction}
+        onCancel={() => setConfirmAction(null)}
+      />
+
+      {timeEditModal && (
+        <ModalBase
+          isOpen={!!timeEditModal}
+          onClose={() => setTimeEditModal(null)}
+          title={timeEditModal.kind === 'match' ? 'Editar tiempo de partido' : 'Editar tiempo de set'}
+          size="sm"
+        >
+          <div className="p-4 space-y-4">
+            <label className="block text-sm text-slate-600">
+              Minutos (ej. {timeEditModal.kind === 'match' ? '15.5' : '3'})
+              <input
+                type="number"
+                step="0.1"
+                autoFocus
+                value={timeEditModal.value}
+                onChange={(e) => setTimeEditModal({ ...timeEditModal, value: e.target.value })}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleConfirmTimeEdit(); }}
+                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              />
+            </label>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setTimeEditModal(null)}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:border-slate-300"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmTimeEdit}
+                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+              >
+                Guardar
+              </button>
+            </div>
+          </div>
+        </ModalBase>
+      )}
     </div>
   );
 };

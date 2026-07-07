@@ -379,7 +379,7 @@ export const BroadcastPage = () => {
       {/* Header */}
       <header className="bg-slate-800 border-b border-slate-700 px-4 py-2 flex justify-between items-center shrink-0 h-12">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/config')} className="text-slate-400 hover:text-slate-200">
+          <button onClick={() => navigate('/config')} className="text-slate-400 hover:text-slate-200 p-2 -m-2">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
             </svg>
@@ -453,7 +453,7 @@ export const BroadcastPage = () => {
                   />
                   <button
                     onClick={() => copyLink(slot)}
-                    className="mt-1 w-full text-xs text-slate-500 hover:text-slate-300 flex items-center justify-center gap-1 py-1"
+                    className="mt-1 w-full text-xs text-slate-500 hover:text-slate-300 flex items-center justify-center gap-1 py-2"
                   >
                     {copiedSlot === slot ? (
                       <>
@@ -629,7 +629,7 @@ export const BroadcastPage = () => {
                     setShowOverlay(next);
                     socket?.emit('overlay:toggle', { matchId, visible: next });
                   }}
-                  className={`px-2 py-1 rounded text-xs ${showOverlay ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'}`}
+                  className={`px-3 py-2 rounded text-xs ${showOverlay ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'}`}
                 >
                   {showOverlay ? 'Visible' : 'Hidden'}
                 </button>
@@ -638,7 +638,7 @@ export const BroadcastPage = () => {
                 <span className="text-xs text-slate-300">Transparent</span>
                 <button
                   onClick={() => setShowOverlayTransparent(!showOverlayTransparent)}
-                  className={`px-2 py-1 rounded text-xs ${showOverlayTransparent ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-400'}`}
+                  className={`px-3 py-2 rounded text-xs ${showOverlayTransparent ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-400'}`}
                 >
                   {showOverlayTransparent ? 'On' : 'Off'}
                 </button>
@@ -647,7 +647,7 @@ export const BroadcastPage = () => {
                 <span className="text-xs text-slate-300">Show Video</span>
                 <button
                   onClick={() => setShowVideo(!showVideo)}
-                  className={`px-2 py-1 rounded text-xs ${showVideo ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'}`}
+                  className={`px-3 py-2 rounded text-xs ${showVideo ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'}`}
                 >
                   {showVideo ? 'On' : 'Off'}
                 </button>
@@ -656,7 +656,7 @@ export const BroadcastPage = () => {
                 <span className="text-xs text-slate-300">Audio</span>
                 <button
                   onClick={() => setAudioEnabled(!audioEnabled)}
-                  className={`px-2 py-1 rounded text-xs ${audioEnabled ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'}`}
+                  className={`px-3 py-2 rounded text-xs ${audioEnabled ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-400'}`}
                 >
                   {audioEnabled ? 'On' : 'Off'}
                 </button>
