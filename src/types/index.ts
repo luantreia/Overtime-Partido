@@ -48,6 +48,18 @@ export interface Jugador {
     contratoId?: string;
 }
 
+export interface JugadorPartido {
+    id: string;
+    _id?: string;
+    partidoId?: string;
+    jugador: Jugador | string;
+    rol: 'jugador' | 'entrenador';
+    confirmoAsistencia?: boolean;
+    notas?: string;
+    equipo?: string | { _id?: string };
+    numero?: number;
+}
+
 export interface SolicitudJugador {
     id: string;
     nombre: string;

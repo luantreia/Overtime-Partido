@@ -4,7 +4,7 @@ export interface Partido {
   fecha?: string;
   hora?: string;
   ubicacion?: string;
-  estado?: 'programado' | 'en_curso' | 'finalizado' | 'cancelado';
+  estado?: 'programado' | 'en_juego' | 'finalizado' | 'cancelado';
   equipoLocal?: {
     _id: string;
     nombre: string;
