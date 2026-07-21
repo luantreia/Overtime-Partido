@@ -33,7 +33,7 @@ export function renderEstadisticasEquipos(estadisticas: EstadisticasEquiposData,
                     </span>
                     {/* Indicador de fuente de datos */}
                     {estadisticas.jugadores?.length ? (() => {
-                      const fuentesUnicas = [...new Set((estadisticas.jugadores ?? []).map((j) => j.fuente).filter(Boolean))];
+                      const fuentesUnicas = Array.from(new Set((estadisticas.jugadores ?? []).map((j) => j.fuente).filter(Boolean)));
 
                       if (fuentesUnicas.length === 1) {
                         const fuente = fuentesUnicas[0];
