@@ -499,19 +499,21 @@ export const ControlPage: React.FC = () => {
 
   return (
     <div className="h-screen bg-slate-50 flex flex-col overflow-hidden">
-      <header className="bg-white border-b border-slate-200 px-4 py-2 flex justify-between items-center shrink-0 h-12">
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/config')} className="text-slate-400 hover:text-slate-600 p-2 -m-2" aria-label="Volver"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg></button>
-          <div className="flex items-baseline gap-2"><h1 className="text-sm font-bold text-slate-800">Mesa de Control</h1><p className="text-xs text-slate-500 hidden sm:block">{matchData.equipoLocal?.nombre} vs {matchData.equipoVisitante?.nombre}</p></div>
+      <header className="bg-white border-b border-slate-200 px-2 sm:px-4 py-2 flex items-center gap-2 shrink-0 min-h-12">
+        <button onClick={() => navigate('/config')} className="text-slate-400 hover:text-slate-600 p-2 -m-1 shrink-0" aria-label="Volver"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg></button>
+        {/* En mobile, lo que identifica el partido (equipos) importa más que el título de la pantalla */}
+        <div className="flex-1 min-w-0 leading-tight">
+          <p className="text-sm font-bold text-slate-800 truncate">{matchData.equipoLocal?.nombre} <span className="text-slate-400 font-normal">vs</span> {matchData.equipoVisitante?.nombre}</p>
+          <p className="text-[10px] text-slate-400 hidden sm:block">Mesa de Control</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {isSaving && (
             <div className="flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded animate-pulse">
               <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-              <span>Guardando...</span>
+              <span className="hidden sm:inline">Guardando...</span>
             </div>
           )}
-          <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} title={isConnected ? 'Conectado' : 'Desconectado'} />
+          <div className={`w-2 h-2 rounded-full shrink-0 ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} title={isConnected ? 'Conectado' : 'Desconectado'} />
         </div>
       </header>
       <main className="flex-1 p-2 overflow-y-auto overflow-x-hidden bg-slate-100">
