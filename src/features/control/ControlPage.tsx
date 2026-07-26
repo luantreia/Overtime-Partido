@@ -518,10 +518,9 @@ export const ControlPage: React.FC = () => {
       </header>
       <main className="flex-1 p-2 overflow-y-auto overflow-x-hidden bg-slate-100">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-2 max-w-7xl mx-auto pb-20">
-          {/* En mobile esta columna va PRIMERO (order-1): es donde se anota el resultado del set,
-              la acción que más se usa durante el partido. En desktop vuelve a la derecha. */}
+          {/* En mobile esta columna va PRIMERO (order-1): es donde se anota el resultado del set y se piden
+              timeouts, las acciones que más se usan durante el partido. En desktop vuelve a la derecha. */}
           <div className="order-1 md:order-2 md:col-span-5 flex flex-col gap-2">
-            <OverlayScoreboard matchData={matchData} score={{ local: localScore, visitor: visitorScore }} timers={timersState} inline />
             {/* "Cancha en Vivo": inspirado en el controlador de partidos ranked de Overtime-Organizaciones —
                 timeline compacta de sets + marcador centrado por equipo, en vez de una lista larga y botones sueltos. */}
             <div className="bg-white rounded-xl shadow-sm border border-emerald-100 p-3 flex flex-col overflow-hidden min-h-[300px]">
@@ -629,63 +628,15 @@ export const ControlPage: React.FC = () => {
                 )}
               </div>
             </div>
-          </div>
 
-          {/* En mobile esta columna va SEGUNDO (order-2): reloj, timeouts y cierre del partido.
-              En desktop vuelve a la izquierda, como antes. */}
-          <div className="order-2 md:order-1 md:col-span-7 flex flex-col gap-2">
-            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-2 shrink-0">
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 text-xs text-center">
-                <div className="bg-slate-50 p-1.5 rounded"><span className="text-slate-400 block text-[10px] uppercase">Competencia</span><span className="font-semibold text-slate-700 truncate block">{matchData.competencia?.nombre || '-'}</span></div>
-                <div className="bg-slate-50 p-1.5 rounded"><span className="text-slate-400 block text-[10px] uppercase">Fase</span><span className="font-semibold text-slate-700 truncate block">{matchData.fase?.nombre || '-'}</span></div>
-                <div className="bg-slate-50 p-1.5 rounded"><span className="text-slate-400 block text-[10px] uppercase">Modalidad</span><span className="font-semibold text-slate-700 truncate block">{matchData.modalidad}</span></div>
-                <div className="bg-slate-50 p-1.5 rounded"><span className="text-slate-400 block text-[10px] uppercase">Cat</span><span className="font-semibold text-slate-700 truncate block">{matchData.categoria}</span></div>
-                <div className="bg-slate-50 p-1.5 rounded col-span-3 sm:col-span-1"><span className="text-slate-400 block text-[10px] uppercase">Estado</span><span className={`font-bold ${matchData.estado === 'en_juego' ? 'text-green-600' : 'text-slate-600'}`}>{matchData.estado?.replace('_',' ').toUpperCase()}</span></div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-3 sticky top-0 z-20">
-              <div className="flex items-center justify-between gap-2 mb-3">
-                <div className="flex items-center gap-1">
-                  <button onClick={() => changePeriod(1)} className={`text-xs font-bold px-3 py-1.5 rounded transition-colors ${period === 1 ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>1T</button>
-                  <button onClick={() => changePeriod(2)} className={`text-xs font-bold px-3 py-1.5 rounded transition-colors ${period === 2 ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>2T</button>
-                </div>
-                <button
-                  onClick={toggleMatch}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full font-bold text-sm shadow-md transition-all ${isMatchRunning ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-green-500 text-white hover:bg-green-600 hover:shadow-green-200'}`}
-                >
-                  {isMatchRunning ? (
-                    <><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg>Pausar Partido</>
-                  ) : (
-                    <><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" /></svg>Iniciar Partido</>
-                  )}
-                </button>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="bg-slate-50 rounded-lg p-2 flex flex-col items-center">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Reloj de Partido</span>
-                  <div className="flex items-center gap-1.5">
-                    <span className={`font-mono text-3xl sm:text-4xl font-bold leading-none ${isMatchRunning ? 'text-slate-800' : 'text-slate-400'}`}>{formatTime(matchTime)}</span>
-                    <button onClick={updateMatchTimeManual} className="text-slate-300 hover:text-slate-500 p-2 -m-1" title="Editar tiempo de partido manualmente"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>
-                  </div>
-                </div>
-                <div className="bg-indigo-50 rounded-lg p-2 flex flex-col items-center">
-                  <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Reloj del Set</span>
-                  <div className="flex items-center gap-1.5">
-                    <span className={`font-mono text-3xl sm:text-4xl font-bold leading-none ${isSuddenDeathActive ? 'text-purple-600 animate-pulse' : (isSetRunning ? 'text-indigo-700' : 'text-indigo-300')}`}>{isSuddenDeathActive ? `+${formatTime(suddenDeathTime)}` : formatTime(setTimer)}</span>
-                    {!isSuddenDeathActive && <button onClick={updateSetTimeManual} className="text-indigo-300 hover:text-indigo-500 p-2 -m-1" title="Editar tiempo de set manualmente"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-2 flex-1 flex flex-col gap-2">
+            {/* Timeouts y Revisión: se piden en cualquier momento del punto, por eso van pegados a Cancha en Vivo */}
+            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-2 flex flex-col gap-2">
               <div className="grid grid-cols-2 gap-2">
                 <button onClick={() => pauseMatch('TIMEOUT','local')} className="bg-orange-100 text-orange-800 text-xs font-bold py-3 rounded hover:bg-orange-200">Time Out Local</button>
                 <button onClick={() => pauseMatch('TIMEOUT','visitante')} className="bg-orange-100 text-orange-800 text-xs font-bold py-3 rounded hover:bg-orange-200">Time Out Visita</button>
                 <button onClick={() => pauseMatch('REVIEW')} className="col-span-2 bg-purple-100 text-purple-800 text-xs font-bold py-3 rounded hover:bg-purple-200">Revisión Arbitral</button>
               </div>
-              <div className="mt-auto pt-2 border-t border-slate-100">
+              <div className="pt-2 border-t border-slate-100">
                 <button
                   onClick={finalizeMatch}
                   disabled={isSaving}
@@ -695,6 +646,62 @@ export const ControlPage: React.FC = () => {
                 </button>
               </div>
             </div>
+          </div>
+
+          {/* En mobile esta columna va SEGUNDO (order-2): control del reloj de partido general y datos
+              de referencia que se consultan una sola vez, no durante cada punto. En desktop vuelve a la izquierda. */}
+          <div className="order-2 md:order-1 md:col-span-7 flex flex-col gap-2">
+            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-3 sticky top-0 z-20">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1">
+                  <button onClick={() => changePeriod(1)} className={`text-xs font-bold px-3 py-1.5 rounded transition-colors ${period === 1 ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>1T</button>
+                  <button onClick={() => changePeriod(2)} className={`text-xs font-bold px-3 py-1.5 rounded transition-colors ${period === 2 ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>2T</button>
+                </div>
+                <div className="flex flex-col items-end">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Reloj de Partido</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`font-mono text-2xl sm:text-3xl font-bold leading-none ${isMatchRunning ? 'text-slate-800' : 'text-slate-400'}`}>{formatTime(matchTime)}</span>
+                    <button onClick={updateMatchTimeManual} className="text-slate-300 hover:text-slate-500 p-2 -m-1" title="Editar tiempo de partido manualmente"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>
+                  </div>
+                </div>
+                <button
+                  onClick={toggleMatch}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full font-bold text-sm shadow-md transition-all shrink-0 ${isMatchRunning ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-green-500 text-white hover:bg-green-600 hover:shadow-green-200'}`}
+                >
+                  {isMatchRunning ? (
+                    <><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg><span className="hidden sm:inline">Pausar Partido</span></>
+                  ) : (
+                    <><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" /></svg><span className="hidden sm:inline">Iniciar Partido</span></>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Preview de lo que se ve en el overlay/OBS: es solo para confirmar, no se toca durante el punto */}
+            <details className="bg-white border border-slate-200 rounded-lg p-2 group">
+              <summary className="text-[10px] text-slate-500 font-bold uppercase tracking-wide cursor-pointer select-none list-none flex items-center gap-1">
+                <svg className="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/></svg>
+                Vista previa del Overlay
+              </summary>
+              <div className="mt-2 pt-2 border-t border-slate-100">
+                <OverlayScoreboard matchData={matchData} score={{ local: localScore, visitor: visitorScore }} timers={timersState} inline />
+              </div>
+            </details>
+
+            {/* Datos de referencia: se chequean una vez al empezar, no hace falta que ocupen lugar fijo */}
+            <details className="bg-white border border-slate-200 rounded-lg p-2 group">
+              <summary className="text-[10px] text-slate-500 font-bold uppercase tracking-wide cursor-pointer select-none list-none flex items-center gap-1">
+                <svg className="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/></svg>
+                Datos del partido
+              </summary>
+              <div className="mt-2 pt-2 border-t border-slate-100 grid grid-cols-3 sm:grid-cols-5 gap-2 text-xs text-center">
+                <div className="bg-slate-50 p-1.5 rounded"><span className="text-slate-400 block text-[10px] uppercase">Competencia</span><span className="font-semibold text-slate-700 truncate block">{matchData.competencia?.nombre || '-'}</span></div>
+                <div className="bg-slate-50 p-1.5 rounded"><span className="text-slate-400 block text-[10px] uppercase">Fase</span><span className="font-semibold text-slate-700 truncate block">{matchData.fase?.nombre || '-'}</span></div>
+                <div className="bg-slate-50 p-1.5 rounded"><span className="text-slate-400 block text-[10px] uppercase">Modalidad</span><span className="font-semibold text-slate-700 truncate block">{matchData.modalidad}</span></div>
+                <div className="bg-slate-50 p-1.5 rounded"><span className="text-slate-400 block text-[10px] uppercase">Cat</span><span className="font-semibold text-slate-700 truncate block">{matchData.categoria}</span></div>
+                <div className="bg-slate-50 p-1.5 rounded col-span-3 sm:col-span-1"><span className="text-slate-400 block text-[10px] uppercase">Estado</span><span className={`font-bold ${matchData.estado === 'en_juego' ? 'text-green-600' : 'text-slate-600'}`}>{matchData.estado?.replace('_',' ').toUpperCase()}</span></div>
+              </div>
+            </details>
 
             <details className="bg-red-50/60 border border-red-100 rounded-lg p-2 group">
               <summary className="text-[11px] text-red-500 font-bold uppercase tracking-wide cursor-pointer select-none list-none flex items-center gap-1">
