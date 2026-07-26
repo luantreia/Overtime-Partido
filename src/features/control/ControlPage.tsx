@@ -516,49 +516,10 @@ export const ControlPage: React.FC = () => {
       </header>
       <main className="flex-1 p-2 overflow-y-auto overflow-x-hidden bg-slate-100">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-2 max-w-7xl mx-auto pb-20">
-          <div className="md:col-span-7 flex flex-col gap-2">
-            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-2 shrink-0">
-              <div className="grid grid-cols-5 gap-2 text-[10px] sm:text-xs text-center">
-                <div className="bg-slate-50 p-1 rounded"><span className="text-slate-400 block text-[9px] uppercase">Competencia</span><span className="font-semibold text-slate-700 truncate block">{matchData.competencia?.nombre || '-'}</span></div>
-                <div className="bg-slate-50 p-1 rounded"><span className="text-slate-400 block text-[9px] uppercase">Fase</span><span className="font-semibold text-slate-700 truncate block">{matchData.fase?.nombre || '-'}</span></div>
-                <div className="bg-slate-50 p-1 rounded"><span className="text-slate-400 block text-[9px] uppercase">Modalidad</span><span className="font-semibold text-slate-700 truncate block">{matchData.modalidad}</span></div>
-                <div className="bg-slate-50 p-1 rounded"><span className="text-slate-400 block text-[9px] uppercase">Cat</span><span className="font-semibold text-slate-700 truncate block">{matchData.categoria}</span></div>
-                <div className="bg-slate-50 p-1 rounded"><span className="text-slate-400 block text-[9px] uppercase">Estado</span><span className={`font-bold ${matchData.estado === 'en_juego' ? 'text-green-600' : 'text-slate-600'}`}>{matchData.estado?.replace('_',' ').toUpperCase()}</span></div>
-              </div>
-            </div>
-            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-2 sm:p-3 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 sticky top-0 z-20">
-              <div className="flex items-center gap-1 order-1">
-                <button onClick={() => changePeriod(1)} className={`text-xs font-bold px-3 py-1.5 rounded transition-colors ${period === 1 ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>1T</button>
-                <button onClick={() => changePeriod(2)} className={`text-xs font-bold px-3 py-1.5 rounded transition-colors ${period === 2 ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>2T</button>
-              </div>
-              <div className="flex items-center gap-4 sm:gap-6 order-3 sm:order-2 w-full sm:w-auto justify-center sm:justify-end mt-1 sm:mt-0 border-t sm:border-t-0 border-slate-100 pt-2 sm:pt-0">
-                <div className="flex flex-col items-center sm:items-end"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Partido</span><div className="flex items-center gap-2"><span className={`font-mono text-3xl sm:text-4xl font-bold leading-none ${isMatchRunning ? 'text-slate-800' : 'text-slate-400'}`}>{formatTime(matchTime)}</span><button onClick={updateMatchTimeManual} className="text-slate-300 hover:text-slate-500 p-2 -m-2" title="Editar Tiempo"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button></div></div>
-                <div className="flex flex-col items-center sm:items-end border-l border-slate-200 pl-4 sm:pl-6"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Set Actual</span><div className="flex items-center gap-2"><span className={`font-mono text-3xl sm:text-4xl font-bold leading-none ${isSuddenDeathActive ? 'text-purple-600 animate-pulse' : (isSetRunning ? 'text-slate-800' : 'text-slate-400')}`}>{isSuddenDeathActive ? `+${formatTime(suddenDeathTime)}` : formatTime(setTimer)}</span>{!isSuddenDeathActive && <button onClick={updateSetTimeManual} className="text-slate-300 hover:text-slate-500 p-2 -m-2" title="Editar Tiempo Set"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>}</div></div>
-              </div>
-              <button onClick={toggleMatch} className={`order-2 sm:order-3 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all shadow-lg shrink-0 ${isMatchRunning ? 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700' : 'bg-green-500 text-white hover:bg-green-600 hover:scale-105 hover:shadow-green-200'}`} title={isMatchRunning ? 'Pausar' : 'Iniciar / Reanudar'}>{isMatchRunning ? <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg> : <svg className="w-6 h-6 ml-0.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" /></svg>}</button>
-            </div>
+          {/* En mobile esta columna va PRIMERO (order-1): es donde se anota el resultado del set,
+              la acción que más se usa durante el partido. En desktop vuelve a la derecha. */}
+          <div className="order-1 md:order-2 md:col-span-5 flex flex-col gap-2">
             <OverlayScoreboard matchData={matchData} score={{ local: localScore, visitor: visitorScore }} timers={timersState} inline />
-            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-2 flex-1 flex flex-col gap-2">
-              <div className="grid grid-cols-2 gap-2">
-                <button onClick={() => pauseMatch('TIMEOUT','local')} className="bg-orange-100 text-orange-800 text-xs font-bold py-2 rounded hover:bg-orange-200">Time Out Local</button>
-                <button onClick={() => pauseMatch('TIMEOUT','visitante')} className="bg-orange-100 text-orange-800 text-xs font-bold py-2 rounded hover:bg-orange-200">Time Out Visita</button>
-                <button onClick={() => pauseMatch('REVIEW')} className="col-span-2 bg-purple-100 text-purple-800 text-xs font-bold py-2 rounded hover:bg-purple-200">Revisión Arbitral</button>
-              </div>
-              <div className="mt-auto pt-2 border-t border-slate-100">
-                <button
-                  onClick={finalizeMatch}
-                  disabled={isSaving}
-                  className="w-full bg-emerald-600 text-white font-black py-3 rounded-lg hover:bg-emerald-700 transition shadow-md uppercase tracking-widest text-sm disabled:opacity-50"
-                >
-                  {isSaving ? 'Guardando...' : '🏁 Finalizar Partido'}
-                </button>
-                <div className="flex justify-end mt-3 pt-2 border-t border-dashed border-slate-200">
-                  <button onClick={resetMatch} className="text-[10px] text-red-400 hover:text-red-600 hover:bg-red-50 px-3 py-2 rounded transition-colors uppercase font-bold">⚠️ Reiniciar Partido</button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="md:col-span-5 flex flex-col gap-2">
             <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-2 flex flex-col overflow-hidden min-h-[300px]">
               <div className="flex justify-between items-center mb-2 shrink-0">
                 <button onClick={() => setShowHistory(!showHistory)} className="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-700 uppercase tracking-wider"><span>Historial ({sets.filter(s => s.estadoSet === 'finalizado').length})</span><svg className={`w-3 h-3 transition-transform ${showHistory ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/></svg></button>
@@ -620,9 +581,90 @@ export const ControlPage: React.FC = () => {
                 )}
               </div>
               {currentSet && !isSetRunning && !isSuddenDeathActive && isMatchRunning && (
-                <div className="mt-2"><button onClick={() => { controllerActions?.startSetIfNeeded(); }} className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-blue-700 shadow-md animate-pulse">▶️ INICIAR TIEMPO DE SET</button></div>
+                <div className="mt-2">
+                  <button onClick={() => { controllerActions?.startSetIfNeeded(); }} className="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold text-base hover:bg-indigo-700 shadow-md animate-pulse flex flex-col items-center gap-0.5">
+                    <span>⏱️ Arrancar cronómetro del Set {currentSet.numeroSet}</span>
+                    <span className="text-[11px] font-normal opacity-80 normal-case">El reloj del partido ya está corriendo por separado</span>
+                  </button>
+                </div>
               )}
             </div>
+          </div>
+
+          {/* En mobile esta columna va SEGUNDO (order-2): reloj, timeouts y cierre del partido.
+              En desktop vuelve a la izquierda, como antes. */}
+          <div className="order-2 md:order-1 md:col-span-7 flex flex-col gap-2">
+            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-2 shrink-0">
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 text-xs text-center">
+                <div className="bg-slate-50 p-1.5 rounded"><span className="text-slate-400 block text-[10px] uppercase">Competencia</span><span className="font-semibold text-slate-700 truncate block">{matchData.competencia?.nombre || '-'}</span></div>
+                <div className="bg-slate-50 p-1.5 rounded"><span className="text-slate-400 block text-[10px] uppercase">Fase</span><span className="font-semibold text-slate-700 truncate block">{matchData.fase?.nombre || '-'}</span></div>
+                <div className="bg-slate-50 p-1.5 rounded"><span className="text-slate-400 block text-[10px] uppercase">Modalidad</span><span className="font-semibold text-slate-700 truncate block">{matchData.modalidad}</span></div>
+                <div className="bg-slate-50 p-1.5 rounded"><span className="text-slate-400 block text-[10px] uppercase">Cat</span><span className="font-semibold text-slate-700 truncate block">{matchData.categoria}</span></div>
+                <div className="bg-slate-50 p-1.5 rounded col-span-3 sm:col-span-1"><span className="text-slate-400 block text-[10px] uppercase">Estado</span><span className={`font-bold ${matchData.estado === 'en_juego' ? 'text-green-600' : 'text-slate-600'}`}>{matchData.estado?.replace('_',' ').toUpperCase()}</span></div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-3 sticky top-0 z-20">
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <div className="flex items-center gap-1">
+                  <button onClick={() => changePeriod(1)} className={`text-xs font-bold px-3 py-1.5 rounded transition-colors ${period === 1 ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>1T</button>
+                  <button onClick={() => changePeriod(2)} className={`text-xs font-bold px-3 py-1.5 rounded transition-colors ${period === 2 ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>2T</button>
+                </div>
+                <button
+                  onClick={toggleMatch}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full font-bold text-sm shadow-md transition-all ${isMatchRunning ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-green-500 text-white hover:bg-green-600 hover:shadow-green-200'}`}
+                >
+                  {isMatchRunning ? (
+                    <><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg>Pausar Partido</>
+                  ) : (
+                    <><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" /></svg>Iniciar Partido</>
+                  )}
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-slate-50 rounded-lg p-2 flex flex-col items-center">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Reloj de Partido</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`font-mono text-3xl sm:text-4xl font-bold leading-none ${isMatchRunning ? 'text-slate-800' : 'text-slate-400'}`}>{formatTime(matchTime)}</span>
+                    <button onClick={updateMatchTimeManual} className="text-slate-300 hover:text-slate-500 p-2 -m-1" title="Editar tiempo de partido manualmente"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>
+                  </div>
+                </div>
+                <div className="bg-indigo-50 rounded-lg p-2 flex flex-col items-center">
+                  <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Reloj del Set</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`font-mono text-3xl sm:text-4xl font-bold leading-none ${isSuddenDeathActive ? 'text-purple-600 animate-pulse' : (isSetRunning ? 'text-indigo-700' : 'text-indigo-300')}`}>{isSuddenDeathActive ? `+${formatTime(suddenDeathTime)}` : formatTime(setTimer)}</span>
+                    {!isSuddenDeathActive && <button onClick={updateSetTimeManual} className="text-indigo-300 hover:text-indigo-500 p-2 -m-1" title="Editar tiempo de set manualmente"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-2 flex-1 flex flex-col gap-2">
+              <div className="grid grid-cols-2 gap-2">
+                <button onClick={() => pauseMatch('TIMEOUT','local')} className="bg-orange-100 text-orange-800 text-xs font-bold py-3 rounded hover:bg-orange-200">Time Out Local</button>
+                <button onClick={() => pauseMatch('TIMEOUT','visitante')} className="bg-orange-100 text-orange-800 text-xs font-bold py-3 rounded hover:bg-orange-200">Time Out Visita</button>
+                <button onClick={() => pauseMatch('REVIEW')} className="col-span-2 bg-purple-100 text-purple-800 text-xs font-bold py-3 rounded hover:bg-purple-200">Revisión Arbitral</button>
+              </div>
+              <div className="mt-auto pt-2 border-t border-slate-100">
+                <button
+                  onClick={finalizeMatch}
+                  disabled={isSaving}
+                  className="w-full bg-emerald-600 text-white font-black py-3 rounded-lg hover:bg-emerald-700 transition shadow-md uppercase tracking-widest text-sm disabled:opacity-50"
+                >
+                  {isSaving ? 'Guardando...' : '🏁 Finalizar Partido'}
+                </button>
+              </div>
+            </div>
+
+            <details className="bg-red-50/60 border border-red-100 rounded-lg p-2 group">
+              <summary className="text-[11px] text-red-500 font-bold uppercase tracking-wide cursor-pointer select-none list-none flex items-center gap-1">
+                <svg className="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/></svg>
+                Zona de riesgo
+              </summary>
+              <div className="mt-2 pt-2 border-t border-red-100">
+                <button onClick={resetMatch} className="w-full text-xs text-red-600 hover:text-white hover:bg-red-600 border border-red-300 px-3 py-2.5 rounded transition-colors font-bold">⚠️ Reiniciar Partido (borra todos los sets)</button>
+              </div>
+            </details>
           </div>
         </div>
       </main>
@@ -657,6 +699,9 @@ export const ControlPage: React.FC = () => {
                 className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
               />
             </label>
+            <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+              ⚠️ Esto sobreescribe el reloj oficial {timeEditModal.kind === 'match' ? 'del partido' : 'del set'} ahora mismo.
+            </p>
             <div className="flex justify-end gap-3">
               <button
                 type="button"
