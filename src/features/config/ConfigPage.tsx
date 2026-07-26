@@ -28,6 +28,11 @@ export const ConfigPage = () => {
   const [partidoEnStats, setPartidoEnStats] = useState<Partido | null>(null);
   const [partidoAIniciar, setPartidoAIniciar] = useState<Partido | null>(null);
   const [iniciando, setIniciando] = useState(false);
+  const [roomId, setRoomId] = useState<string>(() => localStorage.getItem('overtime_partido_room') || 'cancha-1');
+
+  useEffect(() => {
+    localStorage.setItem('overtime_partido_room', roomId);
+  }, [roomId]);
 
   const loadData = useCallback(async () => {
     try {
@@ -66,6 +71,39 @@ export const ConfigPage = () => {
   const goToControl = (matchId: string) => navigate(`/control?matchId=${matchId}`);
   const goToBroadcast = (matchId: string) => navigate(`/broadcast?matchId=${matchId}`);
   const openOverlay = (matchId: string) => window.open(`/overlay?matchId=${matchId}`, '_blank');
+
+  const assignToRoom = async (matchId: string) => {
+    const room = roomId.trim();
+    if (!room) {
+      addToast({ type: 'error', message: 'Definí un nombre de sala primero' });
+      return;
+    }
+    try {
+      await authFetch(`/api/rooms/${encodeURIComponent(room)}/assign`, {
+        method: 'POST',
+        body: { matchId },
+      });
+      addToast({ type: 'success', message: `Partido asignado a la sala "${room}"` });
+    } catch (error) {
+      console.error(error);
+      addToast({ type: 'error', message: 'No pudimos asignar el partido a la sala' });
+    }
+  };
+
+  const copyRoomOverlayUrl = async () => {
+    const room = roomId.trim();
+    if (!room) {
+      addToast({ type: 'error', message: 'Definí un nombre de sala primero' });
+      return;
+    }
+    const url = `${window.location.origin}/overlay?room=${encodeURIComponent(room)}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      addToast({ type: 'success', message: 'URL de overlay de sala copiada' });
+    } catch (error) {
+      addToast({ type: 'error', message: `No se pudo copiar. URL: ${url}` });
+    }
+  };
 
   const handleIniciarPartido = async () => {
     if (!partidoAIniciar) return;
@@ -141,6 +179,13 @@ export const ConfigPage = () => {
               Overlay
             </button>
             <button
+              onClick={() => assignToRoom(partido._id)}
+              className="px-3 py-1.5 bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 rounded hover:bg-fuchsia-100 text-xs font-medium transition-colors"
+              title={`Asignar este partido a la sala "${roomId}" (para que el overlay en OBS lo siga sin cambiar la URL)`}
+            >
+              📡 A la sala
+            </button>
+            <button
               onClick={() => setPartidoEnPlanilla(partido)}
               className="px-3 py-1.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded hover:bg-indigo-100 text-xs font-medium transition-colors"
             >
@@ -195,6 +240,27 @@ export const ConfigPage = () => {
           <h1 className="text-3xl font-bold text-gray-900">Mis Partidos</h1>
           <p className="text-gray-500 mt-1">Gestión de encuentros y transmisiones</p>
         </div>
+      </div>
+
+      <div className="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col sm:flex-row gap-3 sm:items-end">
+        <div className="flex-1">
+          <label className="block text-xs font-medium text-slate-500 mb-1">
+            Sala de overlay (URL fija para OBS)
+          </label>
+          <input
+            type="text"
+            value={roomId}
+            onChange={(e) => setRoomId(e.target.value)}
+            placeholder="ej: cancha-1"
+            className="w-full px-3 py-2 border border-slate-300 rounded text-sm"
+          />
+        </div>
+        <button
+          onClick={copyRoomOverlayUrl}
+          className="px-3 py-2 bg-purple-50 text-purple-700 border border-purple-200 rounded hover:bg-purple-100 text-sm font-medium transition-colors whitespace-nowrap"
+        >
+          📋 Copiar URL de sala
+        </button>
       </div>
 
       <div className="flex flex-wrap gap-2 mb-6">

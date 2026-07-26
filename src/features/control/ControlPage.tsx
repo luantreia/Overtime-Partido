@@ -378,34 +378,48 @@ export const ControlPage: React.FC = () => {
     try {
       // 1. Stop all timers
       controllerActions?.pauseAll();
-      
-      // 2. Prepare sets data for ranking
-      const mappedSets = sets.map(s => ({
-        _id: s._id,
-        winner: s.ganadorSet,
-        time: s.lastSetDuration || 0
-      }));
 
-      // 3. Call the finalize endpoint
-      const res: any = await authFetch(`/ranked/match/${matchId}/finalize`, {
-        method: 'POST',
-        body: {
-          marcadorLocal: localScore,
-          marcadorVisitante: visitorScore,
-          sets: mappedSets,
-          creadoPor: 'mesa-de-control',
-          startTime: matchData.rankedMeta?.startTime || Date.now() 
+      if (matchData.isRanked) {
+        // 2. Prepare sets data for ranking
+        const mappedSets = sets.map(s => ({
+          _id: s._id,
+          winner: s.ganadorSet,
+          time: s.lastSetDuration || 0
+        }));
+
+        // 3. Call the ranked finalize endpoint (applies rating deltas)
+        const res: any = await authFetch(`/ranked/match/${matchId}/finalize`, {
+          method: 'POST',
+          body: {
+            marcadorLocal: localScore,
+            marcadorVisitante: visitorScore,
+            sets: mappedSets,
+            creadoPor: 'mesa-de-control',
+            startTime: matchData.rankedMeta?.startTime || Date.now()
+          }
+        });
+
+        if (!res.ok) {
+          throw new Error(res.message || 'Error al finalizar');
         }
-      });
-      
-      if (res.ok) {
-        addToast({ type: 'success', message: 'Partido finalizado con éxito' });
-        // Hide overlay and navigate
-        hideOverlay(socket, matchId, 'ALL');
-        navigate('/'); 
       } else {
-        throw new Error(res.message || 'Error al finalizar');
+        // Partido no ranked: el endpoint /ranked/match/:id/finalize rechaza
+        // partidos con isRanked=false, así que cerramos por la vía estándar.
+        await authFetch(`/partidos/${matchId}`, {
+          method: 'PUT',
+          body: {
+            estado: 'finalizado',
+            marcadorLocal: localScore,
+            marcadorVisitante: visitorScore,
+            marcadorModificadoManualmente: true
+          }
+        });
       }
+
+      addToast({ type: 'success', message: 'Partido finalizado con éxito' });
+      // Hide overlay and navigate
+      hideOverlay(socket, matchId, 'ALL');
+      navigate('/');
     } catch (e: any) {
       console.error('Error finalizando:', e);
       addToast({ type: 'error', message: e.message || 'Error al finalizar partido' });

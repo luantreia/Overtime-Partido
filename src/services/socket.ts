@@ -1,16 +1,11 @@
 import { io } from 'socket.io-client';
 
-// Use localhost in development, production URL otherwise
-// Check both hostname and NODE_ENV for development detection
-const isDev = window.location.hostname === 'localhost' || 
-              window.location.hostname === '127.0.0.1' ||
-              process.env.NODE_ENV === 'development';
+// Derive the socket host from the same REACT_APP_API_URL used for HTTP calls,
+// so switching between local backend and Render only requires editing .env.
+const API_BASE_URL = process.env.REACT_APP_API_URL ?? 'https://overtime-ddyl.onrender.com/api';
+const URL = API_BASE_URL.replace(/\/api\/?$/, '');
 
-const URL = isDev 
-  ? 'http://localhost:5000'
-  : 'https://overtime-ddyl.onrender.com';
-
-console.log('Socket connecting to:', URL, '(isDev:', isDev, ')');
+console.log('Socket connecting to:', URL);
 
 export const socket = io(URL, {
   autoConnect: false,
