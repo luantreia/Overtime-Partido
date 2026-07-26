@@ -522,13 +522,36 @@ export const ControlPage: React.FC = () => {
               la acción que más se usa durante el partido. En desktop vuelve a la derecha. */}
           <div className="order-1 md:order-2 md:col-span-5 flex flex-col gap-2">
             <OverlayScoreboard matchData={matchData} score={{ local: localScore, visitor: visitorScore }} timers={timersState} inline />
-            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-2 flex flex-col overflow-hidden min-h-[300px]">
-              <div className="flex justify-between items-center mb-2 shrink-0">
-                <button onClick={() => setShowHistory(!showHistory)} className="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-700 uppercase tracking-wider"><span>Historial ({sets.filter(s => s.estadoSet === 'finalizado').length})</span><svg className={`w-3 h-3 transition-transform ${showHistory ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/></svg></button>
-                {currentSet && <span className="text-[10px] font-bold text-green-600 animate-pulse bg-green-50 px-2 py-0.5 rounded-full">EN JUEGO</span>}
+            {/* "Cancha en Vivo": inspirado en el controlador de partidos ranked de Overtime-Organizaciones —
+                timeline compacta de sets + marcador centrado por equipo, en vez de una lista larga y botones sueltos. */}
+            <div className="bg-white rounded-xl shadow-sm border border-emerald-100 p-3 flex flex-col overflow-hidden min-h-[300px]">
+              {/* Timeline de sets: puntitos de color en vez de una lista expandible */}
+              <div className="flex flex-wrap justify-center items-center gap-1 min-h-[24px]">
+                {sets.filter(s => s.estadoSet === 'finalizado').map((s) => (
+                  <div
+                    key={s._id}
+                    className={`group relative w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm transition-transform hover:scale-110 ${
+                      s.ganadorSet === 'local' ? 'bg-red-500' : s.ganadorSet === 'visitante' ? 'bg-blue-500' : 'bg-slate-400'
+                    }`}
+                  >
+                    {s.numeroSet}
+                    <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 transition-opacity">
+                      {s.ganadorSet === 'local' ? matchData.equipoLocal?.nombre : s.ganadorSet === 'visitante' ? matchData.equipoVisitante?.nombre : 'Empate'}
+                    </div>
+                  </div>
+                ))}
+                {sets.filter(s => s.estadoSet === 'finalizado').length === 0 && (
+                  <span className="text-[10px] text-slate-400 italic">Esperando sets...</span>
+                )}
+                {currentSet && <span className="text-[9px] font-bold text-green-600 animate-pulse bg-green-50 px-2 py-0.5 rounded-full ml-1">EN JUEGO</span>}
               </div>
+              {sets.some(s => s.estadoSet === 'finalizado') && (
+                <button onClick={() => setShowHistory(!showHistory)} className="text-[10px] text-slate-400 hover:text-slate-600 underline self-center mt-1">
+                  {showHistory ? 'Ocultar edición de sets' : 'Editar sets anteriores'}
+                </button>
+              )}
               {showHistory && (
-                <div className="flex-1 overflow-y-auto space-y-1 mb-2 pr-1 min-h-0 border-b border-slate-100 pb-2">
+                <div className="mt-2 space-y-1 pr-1 border-t border-slate-100 pt-2">
                   {sets.filter(s => s.estadoSet === 'finalizado').map(s => (
                     <div key={s._id} className="p-2 bg-slate-50 rounded border border-slate-100 text-xs group">
                       <div className="flex justify-between items-center mb-1">
@@ -539,57 +562,72 @@ export const ControlPage: React.FC = () => {
                         </div>
                       </div>
                       <div className="flex gap-1">
-                        <button onClick={() => changeSetWinner(s._id, 'local')} className={`flex-1 py-1 px-2 rounded text-center border ${s.ganadorSet === 'local' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-500 border-slate-200 hover:border-blue-300'}`}>{matchData.equipoLocal?.nombre}</button>
-                        <button onClick={() => changeSetWinner(s._id, 'visitante')} className={`flex-1 py-1 px-2 rounded text-center border ${s.ganadorSet === 'visitante' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-slate-500 border-slate-200 hover:border-red-300'}`}>{matchData.equipoVisitante?.nombre}</button>
+                        <button onClick={() => changeSetWinner(s._id, 'local')} className={`flex-1 py-1 px-2 rounded text-center border ${s.ganadorSet === 'local' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-slate-500 border-slate-200 hover:border-red-300'}`}>{matchData.equipoLocal?.nombre}</button>
+                        <button onClick={() => changeSetWinner(s._id, 'visitante')} className={`flex-1 py-1 px-2 rounded text-center border ${s.ganadorSet === 'visitante' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-500 border-slate-200 hover:border-blue-300'}`}>{matchData.equipoVisitante?.nombre}</button>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
-              <div className="flex-1 flex flex-col justify-center bg-slate-50 rounded-lg border border-slate-100 p-2 relative">
+
+              {/* Marcador centrado por equipo, con el reloj de set en el medio */}
+              <div className="flex items-center justify-center gap-2 sm:gap-5 py-3">
+                <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+                  <span className="text-[10px] font-black text-red-600 uppercase tracking-tight truncate max-w-full">{matchData.equipoLocal?.nombre}</span>
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-2xl sm:text-3xl font-black rounded-xl bg-red-50 border border-red-100 text-red-700 tabular-nums">{localScore}</div>
+                </div>
+                <div className="flex flex-col items-center gap-0.5 px-1 shrink-0">
+                  <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-wider">Set</span>
+                  <span className={`font-mono text-lg sm:text-xl font-bold ${isSuddenDeathActive ? 'text-purple-600 animate-pulse' : (isSetRunning ? 'text-indigo-700' : 'text-indigo-300')}`}>{isSuddenDeathActive ? `+${formatTime(suddenDeathTime)}` : formatTime(setTimer)}</span>
+                  <button onClick={updateSetTimeManual} className="text-indigo-300 hover:text-indigo-500 p-1 -m-1" title="Editar tiempo de set manualmente"><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>
+                </div>
+                <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+                  <span className="text-[10px] font-black text-blue-600 uppercase tracking-tight truncate max-w-full">{matchData.equipoVisitante?.nombre}</span>
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-2xl sm:text-3xl font-black rounded-xl bg-blue-50 border border-blue-100 text-blue-700 tabular-nums">{visitorScore}</div>
+                </div>
+              </div>
+
+              {/* Acción principal: arrancar set, elegir ganador, o iniciar el próximo */}
+              <div className="flex-1 flex flex-col justify-end">
                 {currentSet ? (
-                  <div className="h-full flex flex-col">
-                    <div className="text-center mb-2 flex justify-between items-center px-2">
-                      <div><h3 className="text-lg font-bold text-slate-800">Set {currentSet.numeroSet}</h3><p className="text-xs text-slate-500">Selecciona el ganador</p></div>
-                      <div className="flex flex-col items-end bg-slate-100 p-2 rounded">
-                        <label className="flex items-center gap-1 text-[10px] cursor-pointer mb-1" title="Mostrar/Ocultar Timer de Set en Overlay">
-                          <input type="checkbox" checked={showSetTimerOnOverlay} onChange={toggleOverlaySetTimer} />
-                          <span>Ver en Overlay</span>
-                        </label>
-                        {matchData.modalidad === 'Foam' && (
-                          <label className="flex items-center gap-1 text-[10px] mt-1 cursor-pointer">
-                            <input type="checkbox" checked={suddenDeathMode} onChange={e => {
-                              const enabled = e.target.checked; controllerActions?.setSuddenDeathMode(enabled); localStorage.setItem(`suddenDeathMode_${matchId}`, String(enabled));
-                              if (enabled) {
-                                if (isMatchRunning) {
-                                  if (setTimer > 0) { controllerActions?.startSetIfNeeded(); }
-                                  else { controllerActions?.startSuddenDeath(); }
-                                }
-                              } else { controllerActions?.pauseAll(); }
-                            }} />
-                            <span>Muerte Súbita</span>
-                          </label>
-                        )}
-                      </div>
+                  (!isSetRunning && !isSuddenDeathActive && isMatchRunning) ? (
+                    <button onClick={() => { controllerActions?.startSetIfNeeded(); }} className="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold text-base hover:bg-indigo-700 shadow-md animate-pulse flex flex-col items-center gap-0.5">
+                      <span>⏱️ Arrancar cronómetro del Set {currentSet.numeroSet}</span>
+                      <span className="text-[11px] font-normal opacity-80 normal-case">El reloj del partido ya está corriendo por separado</span>
+                    </button>
+                  ) : (
+                    <div className={`grid ${matchData.modalidad === 'Cloth' ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}>
+                      <button onClick={() => finishSet(currentSet._id, 'local')} disabled={isSaving} className={`bg-red-600 text-white rounded-lg font-bold py-3 hover:bg-red-700 transition shadow-sm flex flex-col items-center justify-center ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><span className="truncate max-w-full px-1">{matchData.equipoLocal?.nombre}</span><span className="text-[10px] font-normal opacity-75">Gana Set +{matchData.modalidad === 'Cloth' ? '2' : '1'}</span></button>
+                      <button onClick={() => finishSet(currentSet._id, 'visitante')} disabled={isSaving} className={`bg-blue-600 text-white rounded-lg font-bold py-3 hover:bg-blue-700 transition shadow-sm flex flex-col items-center justify-center ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><span className="truncate max-w-full px-1">{matchData.equipoVisitante?.nombre}</span><span className="text-[10px] font-normal opacity-75">Gana Set +{matchData.modalidad === 'Cloth' ? '2' : '1'}</span></button>
+                      {matchData.modalidad === 'Cloth' && <button onClick={() => finishSet(currentSet._id, 'empate')} disabled={isSaving} className={`bg-slate-600 text-white rounded-lg font-bold py-3 hover:bg-slate-700 transition shadow-sm flex flex-col items-center justify-center ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><span>Empate</span><span className="text-[10px] font-normal opacity-75">+1 c/u</span></button>}
                     </div>
-                    <div className={`flex-1 grid ${matchData.modalidad === 'Cloth' ? 'grid-rows-3' : 'grid-rows-2'} gap-2`}>
-                      <button onClick={() => finishSet(currentSet._id, 'local')} disabled={isSaving} className={`bg-red-600 text-white rounded-lg font-bold text-lg hover:bg-red-700 transition shadow-sm flex flex-col items-center justify-center ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><span>{matchData.equipoLocal?.nombre}</span><span className="text-xs font-normal opacity-75">+{matchData.modalidad === 'Cloth' ? '2' : '1'} Pts</span></button>
-                      <button onClick={() => finishSet(currentSet._id, 'visitante')} disabled={isSaving} className={`bg-blue-600 text-white rounded-lg font-bold text-lg hover:bg-blue-700 transition shadow-sm flex flex-col items-center justify-center ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><span>{matchData.equipoVisitante?.nombre}</span><span className="text-xs font-normal opacity-75">+{matchData.modalidad === 'Cloth' ? '2' : '1'} Pts</span></button>
-                      {matchData.modalidad === 'Cloth' && <button onClick={() => finishSet(currentSet._id, 'empate')} disabled={isSaving} className={`bg-slate-600 text-white rounded-lg font-bold text-lg hover:bg-slate-700 transition shadow-sm flex flex-col items-center justify-center ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><span>Empate</span><span className="text-xs font-normal opacity-75">+1 Pt c/u</span></button>}
-                    </div>
-                  </div>
+                  )
                 ) : (
-                  <button onClick={() => startNewSet(false)} disabled={isSaving} className={`w-full h-full bg-green-600 text-white rounded-lg font-bold text-xl hover:bg-green-700 shadow-sm flex flex-col items-center justify-center gap-2 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664l-3-2z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>Iniciar Set {sets.length + 1}</span></button>
+                  <button onClick={() => startNewSet(false)} disabled={isSaving} className={`w-full bg-green-600 text-white rounded-lg font-bold text-lg py-4 hover:bg-green-700 shadow-sm flex items-center justify-center gap-2 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664l-3-2z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>Iniciar Set {sets.length + 1}</span></button>
                 )}
               </div>
-              {currentSet && !isSetRunning && !isSuddenDeathActive && isMatchRunning && (
-                <div className="mt-2">
-                  <button onClick={() => { controllerActions?.startSetIfNeeded(); }} className="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold text-base hover:bg-indigo-700 shadow-md animate-pulse flex flex-col items-center gap-0.5">
-                    <span>⏱️ Arrancar cronómetro del Set {currentSet.numeroSet}</span>
-                    <span className="text-[11px] font-normal opacity-80 normal-case">El reloj del partido ya está corriendo por separado</span>
-                  </button>
-                </div>
-              )}
+
+              {/* Toggles secundarios, discretos al pie de la tarjeta */}
+              <div className="flex items-center justify-center gap-4 mt-3 pt-2 border-t border-slate-100">
+                <label className="flex items-center gap-1 text-[10px] text-slate-500 cursor-pointer" title="Mostrar/Ocultar Timer de Set en Overlay">
+                  <input type="checkbox" checked={showSetTimerOnOverlay} onChange={toggleOverlaySetTimer} />
+                  <span>Ver Set en Overlay</span>
+                </label>
+                {matchData.modalidad === 'Foam' && (
+                  <label className="flex items-center gap-1 text-[10px] text-slate-500 cursor-pointer">
+                    <input type="checkbox" checked={suddenDeathMode} onChange={e => {
+                      const enabled = e.target.checked; controllerActions?.setSuddenDeathMode(enabled); localStorage.setItem(`suddenDeathMode_${matchId}`, String(enabled));
+                      if (enabled) {
+                        if (isMatchRunning) {
+                          if (setTimer > 0) { controllerActions?.startSetIfNeeded(); }
+                          else { controllerActions?.startSuddenDeath(); }
+                        }
+                      } else { controllerActions?.pauseAll(); }
+                    }} />
+                    <span>Muerte Súbita</span>
+                  </label>
+                )}
+              </div>
             </div>
           </div>
 
