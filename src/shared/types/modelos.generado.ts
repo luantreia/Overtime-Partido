@@ -106,6 +106,7 @@ export type TargetRole = 'host' | 'rivalCaptain' | 'official';
 export type Team = 'A' | 'B' | 'none';
 export type TeamColor = 'rojo' | 'azul';
 export type TemporadaEstado = 'en_creacion' | 'en_curso' | 'finalizada';
+export type TipoTestMejorEs = 'mayor' | 'menor' | 'neutro';
 export type TokenUsuarioTipo = 'reset-password' | 'verificacion-email';
 export type Type = 'principal' | 'secundario' | 'linea';
 export type UsuarioProvider = 'firebase' | 'local';
@@ -882,6 +883,20 @@ export interface PlayerRating {
   createdAt?: string;
 }
 
+export interface ResultadoTest {
+  equipo: Ref<Equipo>;
+  jugador: Ref<Jugador>;
+  tipoTest: Ref<TipoTest>;
+  fecha: string;
+  valor: number;
+  entrenamiento: Ref<Entrenamiento> | null;
+  notas: string;
+  creadoPor: string;
+  _id: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface Sede {
   nombre: string;
   direccion: string;
@@ -948,6 +963,20 @@ export interface Temporada {
   ganador: Ref<Equipo> | null;
   creadoPor: string;
   administradores?: Array<string>;
+  _id: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface TipoTest {
+  equipo: Ref<Equipo>;
+  nombre: string;
+  unidad: string;
+  mejorEs: TipoTestMejorEs;
+  decimales: number;
+  descripcion: string;
+  activo: boolean;
+  creadoPor: string;
   _id: string;
   createdAt?: string;
   updatedAt?: string;
