@@ -1,1 +1,5 @@
 node_modules
+
+# Salida compilada. Vercel la genera desde el código en cada deploy; tenerla versionada
+# sólo produce conflictos de merge, y más ahora que el CI compila en cada push.
+/build

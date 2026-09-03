@@ -1,0 +1,47 @@
+# Verificación automática de cada push y de cada pull request.
+#
+# Son siete repos independientes, sin workspaces: un cambio que toca el backend y N frontends
+# son N+1 commits en N+1 repos, y nada garantiza que el resto siga compilando. Este workflow es
+# lo que reemplaza a esa garantía. Los cuatro pasos van del más barato al más caro, así que un
+# error de tipos corta en segundos en vez de esperar el build.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      # `npm ci` y no `npm install`: instala exactamente lo del package-lock y falla si el lock
+      # quedó desincronizado, que es justo lo que queremos que el CI avise.
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Tipos
+        run: npm run typecheck
+
+      # Los errores cortan; los warnings quedan a la vista sin frenar el merge. Cuando el
+      # proyecto llegue a cero warnings, agregar `--max-warnings 0` para que no vuelvan a entrar.
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests
+        run: npm run test:ci
+
+      # CI=false a propósito: Create React App convierte CUALQUIER warning de ESLint en error
+      # cuando detecta CI=true, y GitHub Actions lo define solo. Eso haría que este paso falle
+      # por warnings que el paso de Lint ya reportó, escondiendo los errores de build reales.
+      - name: Build
+        run: npm run build
+        env:
+          CI: false

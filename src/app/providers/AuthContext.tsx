@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { login as loginRequest, getProfile } from '../../features/auth/services/authService';
+import { identificarUsuario } from '../../shared/observabilidad/sentry';
 
 type Usuario = { id: string; nombre: string; email: string; rol: string };
 
@@ -86,6 +87,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const refreshProfile = useCallback(async () => { await handleProfileLoad(); }, [handleProfileLoad]);
+
+
+  /**
+   * Un efecto que sigue al estado, en vez de avisarle a Sentry en cada lugar donde `user`
+   * cambia. Una sola fuente no se puede desincronizar: si mañana aparece otra transición,
+   * esta queda cubierta.
+   */
+  useEffect(() => {
+    identificarUsuario(user ? { id: user.id, rol: (user as { rol?: string }).rol } : null);
+  }, [user]);
 
   const value = useMemo(() => ({ user, loading, error, isAuthenticated: Boolean(user), token, login, logout, refreshProfile }), [user, loading, error, token, login, logout, refreshProfile]);
 
