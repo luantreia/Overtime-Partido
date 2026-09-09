@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, type FC, type ReactNode } from 'react';
+import { Overlay } from 'overtime-kit';
 import { renderEstadisticasGenerales } from './EstadisticasGenerales';
 import { renderEstadisticasEquipos } from './EstadisticasEquipos';
 import { renderEstadisticasJugadores } from './EstadisticasJugadores';
@@ -112,75 +113,65 @@ export const EstadisticasPartidoModal: FC<EstadisticasPartidoModalProps> = ({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden">
-        <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-2xl font-bold">Estadísticas del Partido</h2>
+    <Overlay
+      isOpen={isOpen}
+      onClose={onClose}
+      size="2xl"
+      title="Estadísticas del Partido"
+      bodyScroll={false}
+    >
+      {/* Controles */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex space-x-4">
           <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-2xl"
+            onClick={() => setVista('general')}
+            className={`px-4 py-2 rounded ${vista === 'general' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
           >
-            ×
+            General
+          </button>
+          <button
+            onClick={() => setVista('equipos')}
+            className={`px-4 py-2 rounded ${vista === 'equipos' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+          >
+            Por Equipos
+          </button>
+          <button
+            onClick={() => setVista('jugadores')}
+            className={`px-4 py-2 rounded ${vista === 'jugadores' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+          >
+            Por Jugadores
           </button>
         </div>
 
-        <div className="p-6">
-          {/* Controles */}
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex space-x-4">
-              <button
-                onClick={() => setVista('general')}
-                className={`px-4 py-2 rounded ${vista === 'general' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-              >
-                General
-              </button>
-              <button
-                onClick={() => setVista('equipos')}
-                className={`px-4 py-2 rounded ${vista === 'equipos' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-              >
-                Por Equipos
-              </button>
-              <button
-                onClick={() => setVista('jugadores')}
-                className={`px-4 py-2 rounded ${vista === 'jugadores' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-              >
-                Por Jugadores
-              </button>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="modo"
-                  checked={modoEstadisticasUI === 'automatico'}
-                  onChange={() => setModoEstadisticasUI('automatico')}
-                  className="mr-2"
-                />
-                Automático
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="modo"
-                  checked={modoEstadisticasUI === 'manual'}
-                  onChange={() => setModoEstadisticasUI('manual')}
-                  className="mr-2"
-                />
-                Manual
-              </label>
-            </div>
-          </div>
-
-          {/* Contenido */}
-          <div className="overflow-y-auto max-h-[60vh]">
-            {renderVistaActual()}
-          </div>
+        <div className="flex items-center space-x-4">
+          <label className="flex items-center">
+            <input
+              type="radio"
+              name="modo"
+              checked={modoEstadisticasUI === 'automatico'}
+              onChange={() => setModoEstadisticasUI('automatico')}
+              className="mr-2"
+            />
+            Automático
+          </label>
+          <label className="flex items-center">
+            <input
+              type="radio"
+              name="modo"
+              checked={modoEstadisticasUI === 'manual'}
+              onChange={() => setModoEstadisticasUI('manual')}
+              className="mr-2"
+            />
+            Manual
+          </label>
         </div>
       </div>
-    </div>
+
+      {/* Contenido */}
+      <div className="overflow-y-auto max-h-[60vh]">
+        {renderVistaActual()}
+      </div>
+    </Overlay>
   );
 };

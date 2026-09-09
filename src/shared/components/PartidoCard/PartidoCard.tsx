@@ -26,10 +26,6 @@ const badgeStyles = {
     label: 'Cancelado',
     className: 'bg-red-100 text-red-600',
   },
-  proximamente: {
-    label: 'Próximamente',
-    className: 'bg-sky-100 text-sky-700',
-  }
 } as const;
 
 const PartidoCard = ({ partido, variante = 'proximo', actions, onClick }: PartidoCardProps) => {

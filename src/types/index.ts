@@ -97,7 +97,7 @@ export interface Partido {
     };
     fecha?: string;
     hora?: string;
-    estado?: 'programado' | 'en_juego' | 'finalizado' | 'cancelado' | 'proximamente' | 'en_curso';
+    estado?: 'programado' | 'en_juego' | 'finalizado' | 'cancelado';
     resultado?: {
         puntosEquipo: number;
         puntosRival: number;
