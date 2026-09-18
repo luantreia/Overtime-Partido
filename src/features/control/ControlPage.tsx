@@ -9,6 +9,7 @@ import ConfirmModal from '../../shared/components/ConfirmModal/ConfirmModal';
 import ModalBase from '../../shared/components/ModalBase/ModalBase';
 import { listSets, createSet, finishSetApi, reopenSetApi, deleteSetApi, changeWinnerApi, SetPartidoDTO } from '../../shared/features/partido/services/setService';
 import { showOverlay, hideOverlay } from '../../shared/services/overlayService';
+import { extraerYoutubeId } from '../../shared/utils/youtube';
 
 type SetPartido = SetPartidoDTO;
 
@@ -47,6 +48,8 @@ export const ControlPage: React.FC = () => {
   const [showSetTimerOnOverlay, setShowSetTimerOnOverlay] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [videoUrlInput, setVideoUrlInput] = useState('');
+  const [savingVideoUrl, setSavingVideoUrl] = useState(false);
   const [confirmAction, setConfirmAction] = useState<
     | { type: 'deleteSet'; setId: string }
     | { type: 'reopenSet'; setId: string }
@@ -93,6 +96,7 @@ export const ControlPage: React.FC = () => {
       setMatchData(data);
       setLocalScore(data.marcadorLocal || 0);
       setVisitorScore(data.marcadorVisitante || 0);
+      setVideoUrlInput(data.videoUrl || '');
 
       // Ranked Match Sync Logic
       const isRanked = !!data.isRanked;
@@ -348,6 +352,25 @@ export const ControlPage: React.FC = () => {
           // No active set, just match timer runs
         }
       }
+    }
+  };
+
+  const guardarVideoUrl = async () => {
+    if (!matchId) return;
+    if (videoUrlInput && !extraerYoutubeId(videoUrlInput)) {
+      addToast({ type: 'error', message: 'El link no parece ser un link de YouTube válido' });
+      return;
+    }
+    setSavingVideoUrl(true);
+    try {
+      await authFetch(`/partidos/${matchId}`, { method: 'PUT', body: { videoUrl: videoUrlInput } });
+      setMatchData((prev: any) => (prev ? { ...prev, videoUrl: videoUrlInput } : prev));
+      addToast({ type: 'success', message: 'Link de video guardado' });
+    } catch (e) {
+      console.error('Error guardando video', e);
+      addToast({ type: 'error', message: 'No se pudo guardar el link de video' });
+    } finally {
+      setSavingVideoUrl(false);
     }
   };
 
@@ -700,6 +723,22 @@ export const ControlPage: React.FC = () => {
                 <div className="bg-slate-50 p-1.5 rounded"><span className="text-slate-400 block text-[10px] uppercase">Modalidad</span><span className="font-semibold text-slate-700 truncate block">{matchData.modalidad}</span></div>
                 <div className="bg-slate-50 p-1.5 rounded"><span className="text-slate-400 block text-[10px] uppercase">Cat</span><span className="font-semibold text-slate-700 truncate block">{matchData.categoria}</span></div>
                 <div className="bg-slate-50 p-1.5 rounded col-span-3 sm:col-span-1"><span className="text-slate-400 block text-[10px] uppercase">Estado</span><span className={`font-bold ${matchData.estado === 'en_juego' ? 'text-green-600' : 'text-slate-600'}`}>{matchData.estado?.replace('_',' ').toUpperCase()}</span></div>
+              </div>
+              <div className="mt-2 pt-2 border-t border-slate-100 flex gap-2 items-center">
+                <input
+                  type="text"
+                  value={videoUrlInput}
+                  onChange={(e) => setVideoUrlInput(e.target.value)}
+                  placeholder="Link de YouTube en vivo"
+                  className="flex-1 text-xs border border-slate-200 rounded px-2 py-1.5"
+                />
+                <button
+                  onClick={guardarVideoUrl}
+                  disabled={savingVideoUrl}
+                  className="text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 px-3 py-1.5 rounded whitespace-nowrap"
+                >
+                  {savingVideoUrl ? 'Guardando...' : 'Guardar video'}
+                </button>
               </div>
             </details>
 

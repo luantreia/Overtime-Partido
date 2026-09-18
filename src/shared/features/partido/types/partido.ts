@@ -23,6 +23,8 @@ export interface Partido {
   etapa?: 'octavos' | 'cuartos' | 'semifinal' | 'final' | 'tercer_puesto' | 'repechaje' | 'otro';
   grupo?: string;
   division?: string;
+  /** URL de YouTube (en vivo o video final) tal cual la pegó quien la cargó. */
+  videoUrl?: string;
   modalidad?: 'Foam' | 'Cloth';
   categoria?: 'Masculino' | 'Femenino' | 'Mixto' | 'Libre';
   marcadorLocal?: number;
