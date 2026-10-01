@@ -101,7 +101,7 @@ export type PlanillaSetGanadorSet = 'local' | 'visitante' | 'empate' | 'pendient
 export type SetPartidoEstadoSet = 'en_juego' | 'finalizado';
 export type SetPartidoGanadorSet = 'local' | 'visitante' | 'empate' | 'pendiente';
 export type SolicitudEdicionEstado = 'pendiente' | 'aceptado' | 'rechazado' | 'cancelado';
-export type SolicitudEdicionTipo = 'jugador-equipo-editar' | 'jugador-equipo-crear' | 'jugador-equipo-eliminar' | 'contratoEquipoCompetencia' | 'participacion-temporada-crear' | 'participacion-temporada-actualizar' | 'participacion-temporada-eliminar' | 'jugador-temporada-crear' | 'jugador-temporada-actualizar' | 'jugador-temporada-eliminar' | 'resultadoPartido' | 'editarPartidoCompetencia' | 'resultadoSet' | 'estadisticasJugadorSet' | 'estadisticasJugadorPartido' | 'estadisticasEquipoPartido' | 'estadisticasEquipoSet' | 'estadisticas-set-propuesta' | 'estadisticas-partido-propuesta' | 'estadisticasJugadorSet-lote' | 'planilla-equipo-oficializacion' | 'usuario-crear-jugador' | 'usuario-crear-equipo' | 'usuario-crear-organizacion' | 'usuario-solicitar-admin-jugador' | 'usuario-solicitar-admin-equipo' | 'usuario-solicitar-admin-organizacion' | 'jugador-claim';
+export type SolicitudEdicionTipo = 'jugador-equipo-editar' | 'jugador-equipo-crear' | 'jugador-equipo-eliminar' | 'contratoEquipoCompetencia' | 'participacion-temporada-crear' | 'participacion-temporada-actualizar' | 'participacion-temporada-eliminar' | 'jugador-temporada-crear' | 'jugador-temporada-actualizar' | 'jugador-temporada-eliminar' | 'resultadoPartido' | 'editarPartidoCompetencia' | 'editarPartidoVideo' | 'resultadoSet' | 'estadisticasJugadorSet' | 'estadisticasJugadorPartido' | 'estadisticasEquipoPartido' | 'estadisticasEquipoSet' | 'estadisticas-set-propuesta' | 'estadisticas-partido-propuesta' | 'estadisticasJugadorSet-lote' | 'planilla-equipo-oficializacion' | 'usuario-crear-jugador' | 'usuario-crear-equipo' | 'usuario-crear-organizacion' | 'usuario-solicitar-admin-jugador' | 'usuario-solicitar-admin-equipo' | 'usuario-solicitar-admin-organizacion' | 'jugador-claim';
 export type TargetRole = 'host' | 'rivalCaptain' | 'official';
 export type Team = 'A' | 'B' | 'none';
 export type TeamColor = 'rojo' | 'azul';
@@ -748,6 +748,7 @@ export interface Partido {
   jornada: string | null;
   posicionBracket: number;
   nombrePartido?: string;
+  videoUrl: string;
   modalidad: PartidoModalidad;
   categoria: PartidoCategoria;
   fecha: string;
@@ -845,6 +846,7 @@ export interface PlanillaEstadistica {
 export interface PlanillaPresente {
   planilla: Ref<PlanillaEquipo>;
   jugador: Ref<Jugador>;
+  equipo?: Ref<Equipo>;
   jugadorPartido: Ref<JugadorPartido> | null;
   numero?: number;
   rol: PlanillaPresenteRol;
