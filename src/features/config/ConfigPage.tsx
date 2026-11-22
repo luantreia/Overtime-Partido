@@ -244,10 +244,10 @@ export const ConfigPage = () => {
 
       <div className="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col sm:flex-row gap-3 sm:items-end">
         <div className="flex-1">
-          <label className="block text-xs font-medium text-slate-500 mb-1">
+          <label htmlFor="configpage-campo-247" className="block text-xs font-medium text-slate-500 mb-1">
             Sala de overlay (URL fija para OBS)
           </label>
-          <input
+          <input id="configpage-campo-247"
             type="text"
             value={roomId}
             onChange={(e) => setRoomId(e.target.value)}

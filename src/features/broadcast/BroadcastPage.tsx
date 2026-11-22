@@ -507,6 +507,8 @@ export const BroadcastPage = () => {
           {/* Program monitor */}
           <div className="flex-1 relative bg-black rounded-lg overflow-hidden">
             {showVideo ? (
+              // Señal de cámara en vivo: no hay pista de subtítulos posible.
+              // eslint-disable-next-line jsx-a11y/media-has-caption
               <video
                 ref={programVideoRef}
                 autoPlay

@@ -7,6 +7,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import type { CameraSlot, CameraStatus } from '../../../shared/types/camera.types';
+import { accionable } from '../../../shared/utils/accionable';
 
 interface CameraPreviewProps {
   slot: CameraSlot;
@@ -48,9 +49,9 @@ export const CameraPreview: React.FC<CameraPreviewProps> = ({
 
   return (
     <div
-      onClick={onClick}
+      {...accionable(onClick)}
       className={`
-        relative aspect-video bg-gray-900 rounded-lg overflow-hidden cursor-pointer
+        relative aspect-video bg-gray-900 rounded-lg overflow-hidden cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white
         transition-all duration-200 
         ${isActive 
           ? 'ring-4 ring-red-500 ring-offset-2 ring-offset-gray-800 scale-[1.02]' 

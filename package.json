@@ -36,8 +36,13 @@
   "eslintConfig": {
     "extends": [
       "react-app",
-      "react-app/jest"
-    ]
+      "react-app/jest",
+      "plugin:jsx-a11y/recommended"
+    ],
+    "rules": {
+      "jsx-a11y/no-autofocus": "off",
+      "jsx-a11y/label-has-associated-control": ["error", { "controlComponents": ["Input", "Select", "Textarea", "Toggle"], "depth": 3 }]
+    }
   },
   "browserslist": {
     "production": [

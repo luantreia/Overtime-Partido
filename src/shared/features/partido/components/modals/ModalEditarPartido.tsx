@@ -57,8 +57,8 @@ export const ModalEditarPartido = ({ partido, isOpen, onClose, onSaved }: ModalE
     <ModalBase isOpen={isOpen} onClose={onClose} title="Editar partido" size="sm">
       <div className="p-6 space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-          <select
+          <label htmlFor="modaleditarpartido-estado" className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+          <select id="modaleditarpartido-estado"
             className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
             value={estado}
             onChange={(e) => setEstado(e.target.value as EstadoPartido)}
@@ -71,8 +71,8 @@ export const ModalEditarPartido = ({ partido, isOpen, onClose, onSaved }: ModalE
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Fecha y hora</label>
-          <input
+          <label htmlFor="modaleditarpartido-fecha-y-hora" className="block text-sm font-medium text-gray-700 mb-1">Fecha y hora</label>
+          <input id="modaleditarpartido-fecha-y-hora"
             type="datetime-local"
             className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
             value={fecha}

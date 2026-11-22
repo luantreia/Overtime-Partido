@@ -1,5 +1,6 @@
 import { useState, type FC } from 'react';
 import GraficoEstadisticasSet from '../../../../../features/estadisticas/components/GraficoEstadisticasSet';
+import { accionable } from '../../../../utils/accionable';
 
 interface SetPartidoResumen {
   _id: string;
@@ -49,11 +50,12 @@ export const SeccionEstadisticasSetASet: FC<SeccionEstadisticasSetASetProps> = (
               <div key={set._id} className="bg-white rounded border">
                 {/* Header del set */}
                 <div
-                  className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4 p-3 cursor-pointer hover:bg-gray-50 transition-colors"
-                  onClick={() => setSetsExpandidos(prev => ({
+                  className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4 p-3 cursor-pointer hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
+                  {...accionable(() => setSetsExpandidos(prev => ({
                     ...prev,
                     [set._id]: !prev[set._id]
-                  }))}
+                  })))}
+                  aria-expanded={!!setsExpandidos[set._id]}
                 >
                   <div className="flex items-center gap-2">
                     <svg
