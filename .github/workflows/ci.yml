@@ -19,7 +19,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'  # npm 11, el mismo que genera los package-lock en local; con npm 10, `npm ci` rechaza el lock
           cache: npm
 
       # `npm ci` y no `npm install`: instala exactamente lo del package-lock y falla si el lock
