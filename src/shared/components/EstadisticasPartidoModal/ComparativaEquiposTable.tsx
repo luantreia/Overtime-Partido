@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import { DataTable } from 'overtime-kit';
 
 type EquipoComparativa = {
   _id?: string;
@@ -59,72 +60,45 @@ export const ComparativaEquiposTable: FC<ComparativaEquiposTableProps> = ({ esta
           </span>
         </h4>
       </div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Equipo
-              </th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                Lanzamientos
-              </th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                Golpes
-              </th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                Efectividad
-              </th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                Jugadores
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {equiposData.map((equipo) => (
-              <tr
-                key={equipo._id ?? equipo.nombre ?? Math.random()}
-                className="hover:bg-gray-50"
+      <DataTable
+        caption="Comparativa por equipo"
+        data={equiposData}
+        rowKey={(equipo) => equipo._id ?? equipo.nombre ?? ''}
+        empty="No hay datos de equipos para mostrar en este modo."
+        pageSize={0}
+        mobile="scroll"
+        columns={[
+          {
+            id: 'equipo',
+            header: 'Equipo',
+            sortValue: (equipo) => equipo.nombre,
+            cell: (equipo) => (
+              <div className="flex items-center whitespace-nowrap">
+                {equipo.escudo && <img src={equipo.escudo} alt="" className="w-8 h-8 object-contain mr-3" />}
+                <span className="font-medium text-gray-900">{equipo.nombre ?? 'Equipo'}</span>
+              </div>
+            ),
+          },
+          { id: 'throws', header: 'Lanzamientos', align: 'center', sortValue: (equipo) => equipo.throws ?? 0, cell: (equipo) => equipo.throws ?? 0 },
+          { id: 'hits', header: 'Golpes', align: 'center', sortValue: (equipo) => equipo.hits ?? 0, cell: (equipo) => equipo.hits ?? 0 },
+          {
+            id: 'efectividad',
+            header: 'Efectividad',
+            align: 'center',
+            sortValue: (equipo) => equipo.efectividad ?? 0,
+            cell: (equipo) => (
+              <span
+                className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                  (equipo.efectividad ?? 0) > 50 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                }`}
               >
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    {equipo.escudo && (
-                      <img
-                        src={equipo.escudo}
-                        alt={`Escudo ${equipo.nombre ?? 'Equipo'}`}
-                        className="w-8 h-8 object-contain mr-3"
-                      />
-                    )}
-                    <div className="text-sm font-medium text-gray-900">
-                      {equipo.nombre ?? 'Equipo'}
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                  {equipo.throws ?? 0}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                  {equipo.hits ?? 0}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">
-                  <span
-                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      (equipo.efectividad ?? 0) > 50
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}
-                  >
-                    {(equipo.efectividad ?? 0)}%
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                  {equipo.jugadores ?? 0}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                {equipo.efectividad ?? 0}%
+              </span>
+            ),
+          },
+          { id: 'jugadores', header: 'Jugadores', align: 'center', sortValue: (equipo) => equipo.jugadores ?? 0, cell: (equipo) => equipo.jugadores ?? 0 },
+        ]}
+      />
     </div>
   );
 };

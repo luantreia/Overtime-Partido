@@ -1,87 +1,67 @@
 import type { ReactNode } from 'react';
+import { DataTable } from 'overtime-kit';
 import type { EstadisticasJugadoresData } from './types';
+
+type JugadorEstadisticaDetalle = NonNullable<EstadisticasJugadoresData['jugadores']>[number];
+
+const jugadorDe = (j: JugadorEstadisticaDetalle) =>
+  typeof j.jugadorPartido === 'object' ? j.jugadorPartido?.jugador : undefined;
+
+const equipoDe = (j: JugadorEstadisticaDetalle) => {
+  const equipo = typeof j.jugadorPartido === 'object' ? j.jugadorPartido?.equipo : undefined;
+  return typeof equipo === 'string' ? equipo : equipo?.nombre;
+};
+
+const efectividad = (j: JugadorEstadisticaDetalle) => {
+  const throws = j.throws ?? 0;
+  return throws > 0 ? ((j.hits ?? 0) / throws) * 100 : 0;
+};
 
 export const renderEstadisticasJugadores = (
   estadisticas: EstadisticasJugadoresData,
   _partido: unknown,
-): ReactNode => {
-  console.log('🎾 renderEstadisticasJugadores recibió:', {
-    jugadoresLength: estadisticas.jugadores?.length || 0,
-    tieneJugadores: !!estadisticas.jugadores,
-    primerJugador: estadisticas.jugadores?.[0] || 'Sin jugadores'
-  });
-
-  return (
-    <div>
-      <h3 className="text-xl font-semibold mb-4">Estadísticas por Jugador</h3>
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white rounded-lg overflow-hidden">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jugador</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Equipo</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Lanz.</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Golpes</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Outs</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Atrap.</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Efect.</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {estadisticas.jugadores?.length ? estadisticas.jugadores.map((jugador) => {
-              const throws = jugador.throws ?? 0;
-              const hits = jugador.hits ?? 0;
-              const outs = jugador.outs ?? 0;
-              const catches = jugador.catches ?? 0;
-              const efectividadValor = throws > 0 ? (hits / throws) * 100 : 0;
-              const efectividadTexto = efectividadValor.toFixed(1);
-
-              const jugadorInfo = typeof jugador.jugadorPartido === 'object' ? jugador.jugadorPartido?.jugador : undefined;
-              const equipoInfo = typeof jugador.jugadorPartido === 'object' ? jugador.jugadorPartido?.equipo : undefined;
-              const equipoNombre = typeof equipoInfo === 'string' ? equipoInfo : equipoInfo?.nombre;
-
-              return (
-                <tr key={jugador._id ?? `${jugador.jugadorPartido ?? ''}`} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="text-sm font-medium text-gray-900">
-                        {jugadorInfo?.nombre ?? 'Sin nombre'} {jugadorInfo?.apellido ?? ''}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                    {equipoNombre ?? 'Sin equipo'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                    {throws}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                    {hits}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                    {outs}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                    {catches}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                      ${efectividadValor > 50 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                      {efectividadTexto}%
-                    </span>
-                  </td>
-                </tr>
-              );
-            }) : (
-              <tr>
-                <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
-                  No hay estadísticas de jugadores disponibles aún
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-};
+): ReactNode => (
+  <div>
+    <h3 className="text-xl font-semibold mb-4">Estadísticas por Jugador</h3>
+    <DataTable
+      caption="Estadísticas por jugador"
+      data={estadisticas.jugadores ?? []}
+      rowKey={(j) => j._id ?? `${j.jugadorPartido ?? ''}`}
+      empty="No hay estadísticas de jugadores disponibles aún"
+      pageSize={0}
+      mobile="scroll"
+      columns={[
+        {
+          id: 'jugador',
+          header: 'Jugador',
+          sortValue: (j) => `${jugadorDe(j)?.nombre ?? ''} ${jugadorDe(j)?.apellido ?? ''}`.trim() || null,
+          cell: (j) => (
+            <span className="whitespace-nowrap font-medium text-gray-900">
+              {jugadorDe(j)?.nombre ?? 'Sin nombre'} {jugadorDe(j)?.apellido ?? ''}
+            </span>
+          ),
+        },
+        { id: 'equipo', header: 'Equipo', align: 'center', sortValue: (j) => equipoDe(j), cell: (j) => equipoDe(j) ?? 'Sin equipo' },
+        { id: 'throws', header: 'Lanz.', align: 'center', sortValue: (j) => j.throws ?? 0, cell: (j) => j.throws ?? 0 },
+        { id: 'hits', header: 'Golpes', align: 'center', sortValue: (j) => j.hits ?? 0, cell: (j) => j.hits ?? 0 },
+        { id: 'outs', header: 'Outs', align: 'center', sortValue: (j) => j.outs ?? 0, cell: (j) => j.outs ?? 0 },
+        { id: 'catches', header: 'Atrap.', align: 'center', sortValue: (j) => j.catches ?? 0, cell: (j) => j.catches ?? 0 },
+        {
+          id: 'efectividad',
+          header: 'Efect.',
+          align: 'center',
+          sortValue: efectividad,
+          cell: (j) => (
+            <span
+              className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                efectividad(j) > 50 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+              }`}
+            >
+              {efectividad(j).toFixed(1)}%
+            </span>
+          ),
+        },
+      ]}
+    />
+  </div>
+);
