@@ -30,11 +30,13 @@ jobs:
       - name: Tipos
         run: npm run typecheck
 
-      # Los errores cortan; los warnings quedan a la vista sin frenar el merge. Cuando el
-      # proyecto llegue a cero warnings, agregar `--max-warnings 0` para que no vuelvan a entrar.
+      # Cero warnings desde que se sumó jsx-a11y (eslintConfig en package.json): `--max-warnings 0`
+      # hace que tampoco vuelvan a entrar. Las reglas de accesibilidad son parte de este paso.
       - name: Lint
-        run: npm run lint
+        run: npm run lint -- --max-warnings 0
 
+      # Incluye src/shared/a11y.test.tsx: axe-core sobre componentes compartidos (estructura,
+      # roles, nombres accesibles; no contraste, que jsdom no calcula).
       - name: Tests
         run: npm run test:ci
 

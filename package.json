@@ -41,7 +41,18 @@
     ],
     "rules": {
       "jsx-a11y/no-autofocus": "off",
-      "jsx-a11y/label-has-associated-control": ["error", { "controlComponents": ["Input", "Select", "Textarea", "Toggle"], "depth": 3 }]
+      "jsx-a11y/label-has-associated-control": [
+        "error",
+        {
+          "controlComponents": [
+            "Input",
+            "Select",
+            "Textarea",
+            "Toggle"
+          ],
+          "depth": 3
+        }
+      ]
     }
   },
   "browserslist": {
@@ -55,5 +66,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/jest-axe": "^3.5.9",
+    "jest-axe": "^9.0.0"
   }
 }
