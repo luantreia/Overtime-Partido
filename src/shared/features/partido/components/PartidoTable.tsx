@@ -81,7 +81,7 @@ export const PartidoTable: React.FC<PartidoTableProps> = ({
                 {p.equipoLocal?.escudo ? (
                   <img src={p.equipoLocal.escudo} alt="local" className="w-12 h-12 rounded-full object-cover mb-2 border border-slate-100" />
                 ) : (
-                  <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center text-xs text-slate-400 mb-2">L</div>
+                  <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center text-xs text-muted mb-2">L</div>
                 )}
                 <span className="text-sm font-bold text-slate-800 leading-tight">{p.equipoLocal?.nombre || 'Local'}</span>
               </div>
@@ -101,7 +101,7 @@ export const PartidoTable: React.FC<PartidoTableProps> = ({
                 {p.equipoVisitante?.escudo ? (
                   <img src={p.equipoVisitante.escudo} alt="visitante" className="w-12 h-12 rounded-full object-cover mb-2 border border-slate-100" />
                 ) : (
-                  <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center text-xs text-slate-400 mb-2">V</div>
+                  <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center text-xs text-muted mb-2">V</div>
                 )}
                 <span className="text-sm font-bold text-slate-800 leading-tight">{p.equipoVisitante?.nombre || 'Visita'}</span>
               </div>
@@ -162,7 +162,7 @@ export const PartidoTable: React.FC<PartidoTableProps> = ({
                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                       />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs text-slate-400">—</div>
+                      <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs text-muted">—</div>
                     )}
                     <span className="text-slate-900 font-medium">{p.equipoLocal?.nombre || '—'}</span>
                   </div>
@@ -182,7 +182,7 @@ export const PartidoTable: React.FC<PartidoTableProps> = ({
                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                       />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs text-slate-400">—</div>
+                      <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs text-muted">—</div>
                     )}
                     <span className="text-slate-900 font-medium">{p.equipoVisitante?.nombre || '—'}</span>
                   </div>

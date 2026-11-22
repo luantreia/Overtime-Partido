@@ -225,7 +225,7 @@ export const ConfigPage = () => {
           </div>
         );
       case 'cancelado':
-        return <span className="text-xs text-slate-400 italic">Partido cancelado</span>;
+        return <span className="text-xs text-muted italic">Partido cancelado</span>;
       default:
         return null;
     }
@@ -275,7 +275,7 @@ export const ConfigPage = () => {
             }`}
           >
             {pill.label}
-            <span className={`ml-1.5 ${filtroEstado === pill.key ? 'text-blue-100' : 'text-slate-400'}`}>
+            <span className={`ml-1.5 ${filtroEstado === pill.key ? 'text-blue-100' : 'text-muted'}`}>
               ({conteos[pill.key] ?? 0})
             </span>
           </button>

@@ -46,7 +46,7 @@ export const PartidoCard: React.FC<PartidoCardProps> = ({ partido, variante = 'p
     >
       <header className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-wide text-slate-400">
+          <p className="text-xs uppercase tracking-wide text-muted">
             {partido.competencia?.nombre ?? 'Partido amistoso'}
           </p>
           <h3 className="text-lg font-semibold text-slate-900">
@@ -54,7 +54,7 @@ export const PartidoCard: React.FC<PartidoCardProps> = ({ partido, variante = 'p
           </h3>
           <p className="text-sm text-slate-500">{fechaTexto}</p>
           {partido.ubicacion ? (
-            <p className="text-xs text-slate-400">{partido.ubicacion}</p>
+            <p className="text-xs text-muted">{partido.ubicacion}</p>
           ) : null}
         </div>
         <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${badge.className}`}>

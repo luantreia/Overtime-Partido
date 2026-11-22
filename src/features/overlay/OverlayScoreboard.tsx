@@ -52,7 +52,7 @@ const OverlayScoreboard: React.FC<Props> = ({ matchData, score, timers, inline =
           <div className="text-4xl font-mono font-bold text-red-600">{score.local}</div>
         </div>
         <div className="text-center">
-          <div className="text-[10px] font-bold text-gray-500">Periodo {timers.period}</div>
+          <div className="text-2xs font-bold text-gray-500">Periodo {timers.period}</div>
           <div className="font-mono text-2xl font-bold text-yellow-500">{formatTime(showMatch)}</div>
           {showSetTimer && (
             <div className={`text-xs mt-1 ${timers.isSuddenDeathActive ? 'text-purple-600 font-bold' : 'text-gray-500'}`}>
@@ -84,7 +84,7 @@ const OverlayScoreboard: React.FC<Props> = ({ matchData, score, timers, inline =
       
       {/* VS / Time */}
       <div className="bg-black/50 text-white px-4 py-2 flex flex-col items-center justify-center min-w-[100px] border-l border-r border-white/10">
-        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Periodo {timers.period}</span>
+        <span className="text-2xs text-gray-400 font-bold uppercase tracking-widest">Periodo {timers.period}</span>
         <span className="font-mono text-3xl font-bold text-yellow-400">{formatTime(showMatch)}</span>
         {showSetTimer && (
           <div className={`text-xs font-mono mt-0.5 ${timers.isSuddenDeathActive ? 'text-purple-400 animate-pulse font-bold' : 'text-gray-400'}`}>

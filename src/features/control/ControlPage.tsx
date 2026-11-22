@@ -523,11 +523,11 @@ export const ControlPage: React.FC = () => {
   return (
     <div className="h-screen bg-slate-50 flex flex-col overflow-hidden">
       <header className="bg-white border-b border-slate-200 px-2 sm:px-4 py-2 flex items-center gap-2 shrink-0 min-h-12">
-        <button onClick={() => navigate('/config')} className="text-slate-400 hover:text-slate-600 p-2 -m-1 shrink-0" aria-label="Volver"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg></button>
+        <button onClick={() => navigate('/config')} className="text-muted hover:text-slate-600 p-2 -m-1 shrink-0" aria-label="Volver"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg></button>
         {/* En mobile, lo que identifica el partido (equipos) importa más que el título de la pantalla */}
         <div className="flex-1 min-w-0 leading-tight">
-          <p className="text-sm font-bold text-slate-800 truncate">{matchData.equipoLocal?.nombre} <span className="text-slate-400 font-normal">vs</span> {matchData.equipoVisitante?.nombre}</p>
-          <p className="text-[10px] text-slate-400 hidden sm:block">Mesa de Control</p>
+          <p className="text-sm font-bold text-slate-800 truncate">{matchData.equipoLocal?.nombre} <span className="text-muted font-normal">vs</span> {matchData.equipoVisitante?.nombre}</p>
+          <p className="text-2xs text-muted hidden sm:block">Mesa de Control</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {isSaving && (
@@ -552,23 +552,23 @@ export const ControlPage: React.FC = () => {
                 {sets.filter(s => s.estadoSet === 'finalizado').map((s) => (
                   <div
                     key={s._id}
-                    className={`group relative w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm transition-transform hover:scale-110 ${
+                    className={`group relative w-6 h-6 rounded-full flex items-center justify-center text-2xs font-bold text-white shadow-sm transition-transform hover:scale-110 ${
                       s.ganadorSet === 'local' ? 'bg-red-500' : s.ganadorSet === 'visitante' ? 'bg-blue-500' : 'bg-slate-400'
                     }`}
                   >
                     {s.numeroSet}
-                    <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 transition-opacity">
+                    <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-2xs px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 transition-opacity">
                       {s.ganadorSet === 'local' ? matchData.equipoLocal?.nombre : s.ganadorSet === 'visitante' ? matchData.equipoVisitante?.nombre : 'Empate'}
                     </div>
                   </div>
                 ))}
                 {sets.filter(s => s.estadoSet === 'finalizado').length === 0 && (
-                  <span className="text-[10px] text-slate-400 italic">Esperando sets...</span>
+                  <span className="text-2xs text-muted italic">Esperando sets...</span>
                 )}
-                {currentSet && <span className="text-[9px] font-bold text-green-600 animate-pulse bg-green-50 px-2 py-0.5 rounded-full ml-1">EN JUEGO</span>}
+                {currentSet && <span className="text-2xs font-bold text-green-600 animate-pulse bg-green-50 px-2 py-0.5 rounded-full ml-1">EN JUEGO</span>}
               </div>
               {sets.some(s => s.estadoSet === 'finalizado') && (
-                <button onClick={() => setShowHistory(!showHistory)} className="text-[10px] text-slate-400 hover:text-slate-600 underline self-center mt-1">
+                <button onClick={() => setShowHistory(!showHistory)} className="text-2xs text-muted hover:text-slate-600 underline self-center mt-1">
                   {showHistory ? 'Ocultar edición de sets' : 'Editar sets anteriores'}
                 </button>
               )}
@@ -595,16 +595,16 @@ export const ControlPage: React.FC = () => {
               {/* Marcador centrado por equipo, con el reloj de set en el medio */}
               <div className="flex items-center justify-center gap-2 sm:gap-5 py-3">
                 <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
-                  <span className="text-[10px] font-black text-red-600 uppercase tracking-tight truncate max-w-full">{matchData.equipoLocal?.nombre}</span>
+                  <span className="text-2xs font-black text-red-600 uppercase tracking-tight truncate max-w-full">{matchData.equipoLocal?.nombre}</span>
                   <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-2xl sm:text-3xl font-black rounded-xl bg-red-50 border border-red-100 text-red-700 tabular-nums">{localScore}</div>
                 </div>
                 <div className="flex flex-col items-center gap-0.5 px-1 shrink-0">
-                  <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-wider">Set</span>
+                  <span className="text-2xs font-bold text-indigo-400 uppercase tracking-wider">Set</span>
                   <span className={`font-mono text-lg sm:text-xl font-bold ${isSuddenDeathActive ? 'text-purple-600 animate-pulse' : (isSetRunning ? 'text-indigo-700' : 'text-indigo-300')}`}>{isSuddenDeathActive ? `+${formatTime(suddenDeathTime)}` : formatTime(setTimer)}</span>
                   <button onClick={updateSetTimeManual} className="text-indigo-300 hover:text-indigo-500 p-1 -m-1" title="Editar tiempo de set manualmente"><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>
                 </div>
                 <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
-                  <span className="text-[10px] font-black text-blue-600 uppercase tracking-tight truncate max-w-full">{matchData.equipoVisitante?.nombre}</span>
+                  <span className="text-2xs font-black text-blue-600 uppercase tracking-tight truncate max-w-full">{matchData.equipoVisitante?.nombre}</span>
                   <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-2xl sm:text-3xl font-black rounded-xl bg-blue-50 border border-blue-100 text-blue-700 tabular-nums">{visitorScore}</div>
                 </div>
               </div>
@@ -619,9 +619,9 @@ export const ControlPage: React.FC = () => {
                     </button>
                   ) : (
                     <div className={`grid ${matchData.modalidad === 'Cloth' ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}>
-                      <button onClick={() => finishSet(currentSet._id, 'local')} disabled={isSaving} className={`bg-red-600 text-white rounded-lg font-bold py-3 hover:bg-red-700 transition shadow-sm flex flex-col items-center justify-center ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><span className="truncate max-w-full px-1">{matchData.equipoLocal?.nombre}</span><span className="text-[10px] font-normal opacity-75">Gana Set +{matchData.modalidad === 'Cloth' ? '2' : '1'}</span></button>
-                      <button onClick={() => finishSet(currentSet._id, 'visitante')} disabled={isSaving} className={`bg-blue-600 text-white rounded-lg font-bold py-3 hover:bg-blue-700 transition shadow-sm flex flex-col items-center justify-center ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><span className="truncate max-w-full px-1">{matchData.equipoVisitante?.nombre}</span><span className="text-[10px] font-normal opacity-75">Gana Set +{matchData.modalidad === 'Cloth' ? '2' : '1'}</span></button>
-                      {matchData.modalidad === 'Cloth' && <button onClick={() => finishSet(currentSet._id, 'empate')} disabled={isSaving} className={`bg-slate-600 text-white rounded-lg font-bold py-3 hover:bg-slate-700 transition shadow-sm flex flex-col items-center justify-center ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><span>Empate</span><span className="text-[10px] font-normal opacity-75">+1 c/u</span></button>}
+                      <button onClick={() => finishSet(currentSet._id, 'local')} disabled={isSaving} className={`bg-red-600 text-white rounded-lg font-bold py-3 hover:bg-red-700 transition shadow-sm flex flex-col items-center justify-center ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><span className="truncate max-w-full px-1">{matchData.equipoLocal?.nombre}</span><span className="text-2xs font-normal opacity-75">Gana Set +{matchData.modalidad === 'Cloth' ? '2' : '1'}</span></button>
+                      <button onClick={() => finishSet(currentSet._id, 'visitante')} disabled={isSaving} className={`bg-blue-600 text-white rounded-lg font-bold py-3 hover:bg-blue-700 transition shadow-sm flex flex-col items-center justify-center ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><span className="truncate max-w-full px-1">{matchData.equipoVisitante?.nombre}</span><span className="text-2xs font-normal opacity-75">Gana Set +{matchData.modalidad === 'Cloth' ? '2' : '1'}</span></button>
+                      {matchData.modalidad === 'Cloth' && <button onClick={() => finishSet(currentSet._id, 'empate')} disabled={isSaving} className={`bg-slate-600 text-white rounded-lg font-bold py-3 hover:bg-slate-700 transition shadow-sm flex flex-col items-center justify-center ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><span>Empate</span><span className="text-2xs font-normal opacity-75">+1 c/u</span></button>}
                     </div>
                   )
                 ) : (
@@ -631,12 +631,12 @@ export const ControlPage: React.FC = () => {
 
               {/* Toggles secundarios, discretos al pie de la tarjeta */}
               <div className="flex items-center justify-center gap-4 mt-3 pt-2 border-t border-slate-100">
-                <label className="flex items-center gap-1 text-[10px] text-slate-500 cursor-pointer" title="Mostrar/Ocultar Timer de Set en Overlay">
+                <label className="flex items-center gap-1 text-2xs text-slate-500 cursor-pointer" title="Mostrar/Ocultar Timer de Set en Overlay">
                   <input type="checkbox" checked={showSetTimerOnOverlay} onChange={toggleOverlaySetTimer} />
                   <span>Ver Set en Overlay</span>
                 </label>
                 {matchData.modalidad === 'Foam' && (
-                  <label className="flex items-center gap-1 text-[10px] text-slate-500 cursor-pointer">
+                  <label className="flex items-center gap-1 text-2xs text-slate-500 cursor-pointer">
                     <input type="checkbox" checked={suddenDeathMode} onChange={e => {
                       const enabled = e.target.checked; controllerActions?.setSuddenDeathMode(enabled); localStorage.setItem(`suddenDeathMode_${matchId}`, String(enabled));
                       if (enabled) {
@@ -681,10 +681,10 @@ export const ControlPage: React.FC = () => {
                   <button onClick={() => changePeriod(2)} className={`text-xs font-bold px-3 py-1.5 rounded transition-colors ${period === 2 ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>2T</button>
                 </div>
                 <div className="flex flex-col items-end">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Reloj de Partido</span>
+                  <span className="text-2xs font-bold text-muted uppercase tracking-wider">Reloj de Partido</span>
                   <div className="flex items-center gap-1.5">
-                    <span className={`font-mono text-2xl sm:text-3xl font-bold leading-none ${isMatchRunning ? 'text-slate-800' : 'text-slate-400'}`}>{formatTime(matchTime)}</span>
-                    <button onClick={updateMatchTimeManual} className="text-slate-300 hover:text-slate-500 p-2 -m-1" title="Editar tiempo de partido manualmente"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>
+                    <span className={`font-mono text-2xl sm:text-3xl font-bold leading-none ${isMatchRunning ? 'text-slate-800' : 'text-muted'}`}>{formatTime(matchTime)}</span>
+                    <button onClick={updateMatchTimeManual} className="text-muted hover:text-slate-500 p-2 -m-1" title="Editar tiempo de partido manualmente"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>
                   </div>
                 </div>
                 <button
@@ -702,7 +702,7 @@ export const ControlPage: React.FC = () => {
 
             {/* Preview de lo que se ve en el overlay/OBS: es solo para confirmar, no se toca durante el punto */}
             <details className="bg-white border border-slate-200 rounded-lg p-2 group">
-              <summary className="text-[10px] text-slate-500 font-bold uppercase tracking-wide cursor-pointer select-none list-none flex items-center gap-1">
+              <summary className="text-2xs text-slate-500 font-bold uppercase tracking-wide cursor-pointer select-none list-none flex items-center gap-1">
                 <svg className="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/></svg>
                 Vista previa del Overlay
               </summary>
@@ -713,16 +713,16 @@ export const ControlPage: React.FC = () => {
 
             {/* Datos de referencia: se chequean una vez al empezar, no hace falta que ocupen lugar fijo */}
             <details className="bg-white border border-slate-200 rounded-lg p-2 group">
-              <summary className="text-[10px] text-slate-500 font-bold uppercase tracking-wide cursor-pointer select-none list-none flex items-center gap-1">
+              <summary className="text-2xs text-slate-500 font-bold uppercase tracking-wide cursor-pointer select-none list-none flex items-center gap-1">
                 <svg className="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/></svg>
                 Datos del partido
               </summary>
               <div className="mt-2 pt-2 border-t border-slate-100 grid grid-cols-3 sm:grid-cols-5 gap-2 text-xs text-center">
-                <div className="bg-slate-50 p-1.5 rounded"><span className="text-slate-400 block text-[10px] uppercase">Competencia</span><span className="font-semibold text-slate-700 truncate block">{matchData.competencia?.nombre || '-'}</span></div>
-                <div className="bg-slate-50 p-1.5 rounded"><span className="text-slate-400 block text-[10px] uppercase">Fase</span><span className="font-semibold text-slate-700 truncate block">{matchData.fase?.nombre || '-'}</span></div>
-                <div className="bg-slate-50 p-1.5 rounded"><span className="text-slate-400 block text-[10px] uppercase">Modalidad</span><span className="font-semibold text-slate-700 truncate block">{matchData.modalidad}</span></div>
-                <div className="bg-slate-50 p-1.5 rounded"><span className="text-slate-400 block text-[10px] uppercase">Cat</span><span className="font-semibold text-slate-700 truncate block">{matchData.categoria}</span></div>
-                <div className="bg-slate-50 p-1.5 rounded col-span-3 sm:col-span-1"><span className="text-slate-400 block text-[10px] uppercase">Estado</span><span className={`font-bold ${matchData.estado === 'en_juego' ? 'text-green-600' : 'text-slate-600'}`}>{matchData.estado?.replace('_',' ').toUpperCase()}</span></div>
+                <div className="bg-slate-50 p-1.5 rounded"><span className="text-muted block text-2xs uppercase">Competencia</span><span className="font-semibold text-slate-700 truncate block">{matchData.competencia?.nombre || '-'}</span></div>
+                <div className="bg-slate-50 p-1.5 rounded"><span className="text-muted block text-2xs uppercase">Fase</span><span className="font-semibold text-slate-700 truncate block">{matchData.fase?.nombre || '-'}</span></div>
+                <div className="bg-slate-50 p-1.5 rounded"><span className="text-muted block text-2xs uppercase">Modalidad</span><span className="font-semibold text-slate-700 truncate block">{matchData.modalidad}</span></div>
+                <div className="bg-slate-50 p-1.5 rounded"><span className="text-muted block text-2xs uppercase">Cat</span><span className="font-semibold text-slate-700 truncate block">{matchData.categoria}</span></div>
+                <div className="bg-slate-50 p-1.5 rounded col-span-3 sm:col-span-1"><span className="text-muted block text-2xs uppercase">Estado</span><span className={`font-bold ${matchData.estado === 'en_juego' ? 'text-green-600' : 'text-slate-600'}`}>{matchData.estado?.replace('_',' ').toUpperCase()}</span></div>
               </div>
               <div className="mt-2 pt-2 border-t border-slate-100 flex gap-2 items-center">
                 <input

@@ -163,7 +163,7 @@ export const ModalEditarResultado = ({ partido, isOpen, onClose, onSaved }: Moda
               className="mt-2 w-20 text-center text-2xl font-bold border border-slate-300 rounded-lg p-1"
             />
           </div>
-          <div className="text-slate-400 font-bold px-4">VS</div>
+          <div className="text-muted font-bold px-4">VS</div>
           <div className="text-center flex-1">
             <div className="font-bold text-slate-800">{partido.equipoVisitante?.nombre || 'Visitante'}</div>
             <input
