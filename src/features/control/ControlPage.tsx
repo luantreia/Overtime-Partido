@@ -442,7 +442,7 @@ export const ControlPage: React.FC = () => {
       addToast({ type: 'success', message: 'Partido finalizado con éxito' });
       // Hide overlay and navigate
       hideOverlay(socket, matchId, 'ALL');
-      navigate('/');
+      navigate('/config');
     } catch (e: any) {
       console.error('Error finalizando:', e);
       addToast({ type: 'error', message: e.message || 'Error al finalizar partido' });

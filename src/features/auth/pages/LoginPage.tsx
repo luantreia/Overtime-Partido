@@ -18,7 +18,7 @@ const LoginPage: React.FC = () => {
     try {
       await login(email, password);
       addToast({ type: 'success', title: 'Sesión iniciada', message: 'Bienvenido/a' });
-      const redirectTo = location.state?.from?.pathname || '/control';
+      const redirectTo = location.state?.from?.pathname || '/config';
       navigate(redirectTo, { replace: true });
     } catch (err: any) {
       const message = err?.message || 'Error al iniciar sesión';

@@ -10,7 +10,6 @@ import { AuthProvider, useAuth } from './app/providers/AuthContext';
 import { ToastProvider } from './shared/components/Toast/ToastProvider';
 
 import { ConfigPage } from './features/config/ConfigPage';
-import { StatsPage } from './features/stats/StatsPage';
 import ErrorBoundary from './shared/components/ErrorBoundary';
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
@@ -48,10 +47,7 @@ function AppContent() {
               <div className="container mx-auto flex justify-between items-center">
                 <div className="text-xl font-bold">Overtime Gestión</div>
                 <div className="flex items-center space-x-4">
-                  <Link to="/config" className="hover:text-blue-200">Configuración</Link>
-                  <Link to="/control" className="hover:text-blue-200">Botonera</Link>
-                  <Link to="/stats" className="hover:text-blue-200">Estadísticas</Link>
-                  <Link to="/overlay" className="hover:text-blue-200" target="_blank">Overlay (OBS)</Link>
+                  <Link to="/config" className="hover:text-blue-200">Mis partidos</Link>
                   <div className="ml-4 flex items-center gap-2 border-l pl-4 border-blue-400">
                     <span className="text-sm">{user?.nombre}</span>
                     <button onClick={logout} className="text-sm bg-blue-700 px-2 py-1 rounded hover:bg-blue-800">Salir</button>
@@ -62,10 +58,10 @@ function AppContent() {
 
             <div className="container mx-auto mt-4">
               <Routes>
-                <Route path="/" element={<div className="p-4"><h2>Bienvenido al sistema de gestión de partidos. Selecciona una opción del menú.</h2></div>} />
+                <Route path="/" element={<Navigate to="/config" replace />} />
                 <Route path="/config" element={<ConfigPage />} />
                 <Route path="/control" element={<ControlPage />} />
-                <Route path="/stats" element={<StatsPage />} />
+                <Route path="/stats" element={<Navigate to="/config" replace />} />
               </Routes>
             </div>
           </div>
