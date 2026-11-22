@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, type FC, type ReactNode } from 'react';
-import { Overlay } from 'overtime-kit';
+import { Overlay, Tabs } from 'overtime-kit';
 import { renderEstadisticasGenerales } from './EstadisticasGenerales';
 import { renderEstadisticasEquipos } from './EstadisticasEquipos';
 import { renderEstadisticasJugadores } from './EstadisticasJugadores';
@@ -123,26 +123,17 @@ export const EstadisticasPartidoModal: FC<EstadisticasPartidoModalProps> = ({
     >
       {/* Controles */}
       <div className="flex justify-between items-center mb-6">
-        <div className="flex space-x-4">
-          <button
-            onClick={() => setVista('general')}
-            className={`px-4 py-2 rounded ${vista === 'general' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-          >
-            General
-          </button>
-          <button
-            onClick={() => setVista('equipos')}
-            className={`px-4 py-2 rounded ${vista === 'equipos' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-          >
-            Por Equipos
-          </button>
-          <button
-            onClick={() => setVista('jugadores')}
-            className={`px-4 py-2 rounded ${vista === 'jugadores' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-          >
-            Por Jugadores
-          </button>
-        </div>
+        <Tabs
+          aria-label="Vista de estadísticas"
+          size="sm"
+          items={[
+            { id: 'general', label: 'General' },
+            { id: 'equipos', label: 'Por Equipos' },
+            { id: 'jugadores', label: 'Por Jugadores' },
+          ]}
+          value={vista}
+          onChange={setVista}
+        />
 
         <div className="flex items-center space-x-4">
           <label className="flex items-center">
