@@ -32,6 +32,7 @@ export type AsignacionPartidoEstado = 'activa' | 'revocada';
 export type AsignacionPartidoPermisos = 'match.lineup' | 'match.sets' | 'match.resultado' | 'match.stats' | 'match.view_private' | 'match.*';
 export type AsignacionPartidoRol = 'planillero' | 'arbitro' | 'mesa' | 'veedor';
 export type AsistenciaEntrenamientoEstado = 'convocado' | 'presente' | 'tarde' | 'ausente' | 'justificado';
+export type AsistenciaEntrenamientoRespuesta = 'sin_respuesta' | 'voy' | 'no_voy';
 export type AuditoriaAccion = 'CREATE' | 'UPDATE' | 'DELETE' | 'APPROVE';
 export type CompetenciaCategoria = 'Masculino' | 'Femenino' | 'Mixto' | 'Libre';
 export type CompetenciaEstado = 'programada' | 'en_curso' | 'finalizada' | 'cancelada' | 'en_creacion';
@@ -188,6 +189,9 @@ export interface AsistenciaEntrenamiento {
   entrenamiento: Ref<Entrenamiento>;
   jugador: Ref<Jugador>;
   estado: AsistenciaEntrenamientoEstado;
+  respuesta: AsistenciaEntrenamientoRespuesta;
+  respuestaMotivo: string;
+  respondidoEn: string | null;
   minutosTarde: number;
   notas: string;
   _id: string;
