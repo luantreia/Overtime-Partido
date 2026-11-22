@@ -135,6 +135,10 @@ export const ConfigPage = () => {
     { key: 'todos', label: 'Todos' },
   ];
 
+  // Una acción principal por estado (la que el operador hace el 90% de las veces); el resto, secundarias neutras.
+  const BTN_PRI = 'min-h-[36px] px-3 py-1.5 rounded bg-brand-600 text-white hover:bg-brand-700 text-xs font-semibold transition-colors';
+  const BTN_SEC = 'min-h-[36px] px-3 py-1.5 rounded border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-xs font-medium transition-colors';
+
   const renderActions = (partido: Partido) => {
     switch (partido.estado) {
       case 'programado':
@@ -142,13 +146,13 @@ export const ConfigPage = () => {
           <div className="flex gap-2 justify-end flex-wrap">
             <button
               onClick={() => setPartidoEnEdicion(partido)}
-              className="px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded hover:bg-blue-100 text-xs font-medium transition-colors"
+              className={BTN_SEC}
             >
               Editar
             </button>
             <button
               onClick={() => setPartidoAIniciar(partido)}
-              className="px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded hover:bg-emerald-100 text-xs font-medium transition-colors"
+              className={BTN_PRI}
             >
               Iniciar partido
             </button>
@@ -159,48 +163,48 @@ export const ConfigPage = () => {
           <div className="flex gap-2 justify-end flex-wrap">
             <button
               onClick={() => goToControl(partido._id)}
-              className="px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded hover:bg-blue-100 text-xs font-medium transition-colors"
+              className={BTN_PRI}
               title="Ir a Botonera"
             >
               Mesa
             </button>
             <button
               onClick={() => goToBroadcast(partido._id)}
-              className="px-3 py-1.5 bg-orange-50 text-orange-700 border border-orange-200 rounded hover:bg-orange-100 text-xs font-medium transition-colors"
+              className={BTN_SEC}
               title="Ir a Broadcast"
             >
               Broadcast
             </button>
             <button
               onClick={() => openOverlay(partido._id)}
-              className="px-3 py-1.5 bg-purple-50 text-purple-700 border border-purple-200 rounded hover:bg-purple-100 text-xs font-medium transition-colors"
+              className={BTN_SEC}
               title="Abrir Overlay"
             >
               Overlay
             </button>
             <button
               onClick={() => assignToRoom(partido._id)}
-              className="px-3 py-1.5 bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 rounded hover:bg-fuchsia-100 text-xs font-medium transition-colors"
+              className={BTN_SEC}
               title={`Asignar este partido a la sala "${roomId}" (para que el overlay en OBS lo siga sin cambiar la URL)`}
             >
               📡 A la sala
             </button>
             <button
               onClick={() => setPartidoEnPlanilla(partido)}
-              className="px-3 py-1.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded hover:bg-indigo-100 text-xs font-medium transition-colors"
+              className={BTN_SEC}
             >
               Planilla
             </button>
             <button
               onClick={() => setPartidoEnStats(partido)}
-              className="px-3 py-1.5 bg-green-50 text-green-700 border border-green-200 rounded hover:bg-green-100 text-xs font-medium transition-colors"
+              className={BTN_SEC}
               title="Ver Estadísticas"
             >
               Stats
             </button>
             <button
               onClick={() => setPartidoEnEdicion(partido)}
-              className="px-3 py-1.5 bg-slate-100 text-slate-700 border border-slate-200 rounded hover:bg-slate-200 text-xs font-medium transition-colors"
+              className={BTN_SEC}
             >
               Editar
             </button>
@@ -211,13 +215,13 @@ export const ConfigPage = () => {
           <div className="flex gap-2 justify-end flex-wrap">
             <button
               onClick={() => setPartidoEnResultado(partido)}
-              className="px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded hover:bg-blue-100 text-xs font-medium transition-colors"
+              className={BTN_SEC}
             >
               Editar resultado
             </button>
             <button
               onClick={() => setPartidoEnStats(partido)}
-              className="px-3 py-1.5 bg-green-50 text-green-700 border border-green-200 rounded hover:bg-green-100 text-xs font-medium transition-colors"
+              className={BTN_PRI}
               title="Ver Estadísticas"
             >
               Stats
