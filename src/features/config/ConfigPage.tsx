@@ -113,14 +113,15 @@ export const ConfigPage = () => {
         method: 'PUT',
         body: { estado: 'en_juego' },
       });
-      addToast({ type: 'success', message: 'Partido iniciado' });
+      const reanudando = partidoAIniciar.estado === 'suspendido';
+      addToast({ type: 'success', message: reanudando ? 'Partido reanudado' : 'Partido iniciado' });
       const matchId = partidoAIniciar._id;
       setPartidoAIniciar(null);
       await loadData();
       navigate(`/control?matchId=${matchId}`);
     } catch (error) {
       console.error(error);
-      addToast({ type: 'error', message: 'No pudimos iniciar el partido' });
+      addToast({ type: 'error', message: partidoAIniciar?.estado === 'suspendido' ? 'No pudimos reanudar el partido' : 'No pudimos iniciar el partido' });
     } finally {
       setIniciando(false);
     }
@@ -238,6 +239,12 @@ export const ConfigPage = () => {
             >
               Editar
             </button>
+            <button
+              onClick={() => setPartidoAIniciar(partido)}
+              className={BTN_PRI}
+            >
+              Reanudar
+            </button>
           </div>
         );
       case 'cancelado':
@@ -351,9 +358,17 @@ export const ConfigPage = () => {
         isOpen={!!partidoAIniciar}
         onCancel={() => setPartidoAIniciar(null)}
         onConfirm={handleIniciarPartido}
-        title="Iniciar partido"
-        message="¿Iniciar este partido ahora? Se habilitará la mesa de control."
-        confirmLabel={iniciando ? 'Iniciando…' : 'Iniciar'}
+        title={partidoAIniciar?.estado === 'suspendido' ? 'Reanudar partido' : 'Iniciar partido'}
+        message={
+          partidoAIniciar?.estado === 'suspendido'
+            ? '¿Reanudar este partido? Vuelve a estar en juego con el marcador que tenía; revisá el reloj en la mesa de control.'
+            : '¿Iniciar este partido ahora? Se habilitará la mesa de control.'
+        }
+        confirmLabel={
+          partidoAIniciar?.estado === 'suspendido'
+            ? (iniciando ? 'Reanudando…' : 'Reanudar')
+            : (iniciando ? 'Iniciando…' : 'Iniciar')
+        }
         cancelLabel="Cancelar"
         variant="primary"
       />
