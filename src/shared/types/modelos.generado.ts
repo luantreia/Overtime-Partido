@@ -789,6 +789,7 @@ export interface Partido {
   modalidad: PartidoModalidad;
   categoria: PartidoCategoria;
   fecha: string;
+  fechaConfirmada: boolean;
   ubicacion?: string;
   cancha: string | null;
   sede: Ref<Sede> | null;
