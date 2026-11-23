@@ -755,6 +755,16 @@ export interface Partido {
   posicionBracket: number;
   nombrePartido?: string;
   videoUrl: string;
+  videos: Array<{
+    youtubeId: string;
+    etiqueta: string;
+    duracion: number | null;
+    tramos: Array<{
+    cam: Array<number>;
+    d: number;
+    }>;
+    _id: string;
+    }>;
   modalidad: PartidoModalidad;
   categoria: PartidoCategoria;
   fecha: string;
@@ -878,6 +888,12 @@ export interface PlanillaSet {
   numeroSet: number;
   ganadorSet: PlanillaSetGanadorSet;
   setPartido: Ref<SetPartido> | null;
+  tiempo: {
+    desde: number;
+    hasta: number;
+    origen: 'manual' | 'cv' | 'en_vivo';
+    confirmado: boolean;
+    } | null;
   creadoPor: string;
   _id: string;
   createdAt?: string;
@@ -948,6 +964,12 @@ export interface SetPartido {
   duracionReal: number | null;
   duracionSetTimer: number | null;
   duracionSuddenDeath: number | null;
+  tiempo: {
+    desde: number;
+    hasta: number;
+    origen: 'manual' | 'cv' | 'en_vivo';
+    confirmado: boolean;
+    } | null;
   meta?: unknown;
   creadoPor: string;
   _id: string;
