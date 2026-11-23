@@ -967,6 +967,7 @@ export interface SolicitudEdicion {
   fechaRechazo?: string;
   creadoPor: string;
   aprobadoPor?: string;
+  aprobacionParcial: unknown | null;
   _id: string;
   createdAt?: string;
   updatedAt?: string;
