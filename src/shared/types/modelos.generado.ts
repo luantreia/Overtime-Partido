@@ -870,6 +870,16 @@ export interface PlanillaEquipo {
     fechaResolucion?: string;
     motivo?: string;
     };
+  videos: Array<{
+    youtubeId: string;
+    etiqueta: string;
+    duracion: number | null;
+    tramos: Array<{
+    cam: Array<number>;
+    d: number;
+    }>;
+    _id: string;
+    }>;
   notas?: string;
   creadoPor: string;
   _id: string;
