@@ -52,6 +52,9 @@ export type EstadisticasJugadorPartidoVisibilidadObjetivo = 'organizacion' | 'pu
 export type EstadisticasJugadorSetEstadoPublicacion = 'privada' | 'pendiente_aprobacion' | 'organizacion' | 'publica' | 'rechazada';
 export type EstadisticasJugadorSetVisibilidadObjetivo = 'organizacion' | 'publica';
 export type Estado = 'pendiente' | 'aceptado' | 'descartado';
+export type EventoSetMotivo = 'hit' | 'catch' | 'linea' | 'otro';
+export type EventoSetOrigen = 'manual' | 'cv' | 'en_vivo';
+export type EventoSetTipo = 'out' | 'reingreso' | 'cambio';
 export type FaseCriterio = 'global' | 'por_grupo';
 export type FaseCriteriosDesempate = 'PUNTOS' | 'DIF_SETS' | 'SETS_FAVOR' | 'PUNTOS_FAVOR' | 'DIF_PUNTOS' | 'CARA_A_CARA' | 'MENOS_TARJETAS';
 export type FaseEstado = 'programada' | 'en_curso' | 'finalizada';
@@ -378,6 +381,24 @@ export interface EstadisticasJugadorSet {
   estadoPublicacion: EstadisticasJugadorSetEstadoPublicacion;
   solicitudPublicacion?: Ref<SolicitudEdicion>;
   visibilidadObjetivo: EstadisticasJugadorSetVisibilidadObjetivo;
+  creadoPor: string;
+  _id: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface EventoSet {
+  partido: Ref<Partido>;
+  setPartido: Ref<SetPartido> | null;
+  planillaSet: Ref<PlanillaSet> | null;
+  t: number;
+  tipo: EventoSetTipo;
+  jugador: Ref<Jugador>;
+  equipo: Ref<Equipo>;
+  motivo: EventoSetMotivo | null;
+  por: Ref<Jugador> | null;
+  entra: Ref<Jugador> | null;
+  origen: EventoSetOrigen;
   creadoPor: string;
   _id: string;
   createdAt?: string;
@@ -894,6 +915,10 @@ export interface PlanillaSet {
     origen: 'manual' | 'cv' | 'en_vivo';
     confirmado: boolean;
     } | null;
+  alineacion: Array<{
+    jugador: Ref<Jugador>;
+    equipo: Ref<Equipo>;
+    }>;
   creadoPor: string;
   _id: string;
   createdAt?: string;
@@ -970,6 +995,10 @@ export interface SetPartido {
     origen: 'manual' | 'cv' | 'en_vivo';
     confirmado: boolean;
     } | null;
+  alineacion: Array<{
+    jugador: Ref<Jugador>;
+    equipo: Ref<Equipo>;
+    }>;
   meta?: unknown;
   creadoPor: string;
   _id: string;
