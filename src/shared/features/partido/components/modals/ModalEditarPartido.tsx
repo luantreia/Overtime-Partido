@@ -3,8 +3,7 @@ import ModalBase from '../../../../components/ModalBase/ModalBase';
 import { useToast } from '../../../../components/Toast/ToastProvider';
 import { authFetch } from '../../../../utils/authFetch';
 import type { Partido } from '../../types/partido';
-
-type EstadoPartido = 'programado' | 'en_juego' | 'finalizado' | 'cancelado';
+import type { PartidoEstado } from '../../../../types/modelos.generado';
 
 type ModalEditarPartidoProps = {
   partido: Partido | null;
@@ -23,13 +22,13 @@ const toDatetimeLocal = (fecha?: string) => {
 
 export const ModalEditarPartido = ({ partido, isOpen, onClose, onSaved }: ModalEditarPartidoProps) => {
   const { addToast } = useToast();
-  const [estado, setEstado] = useState<EstadoPartido>('programado');
+  const [estado, setEstado] = useState<PartidoEstado>('programado');
   const [fecha, setFecha] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (isOpen && partido) {
-      setEstado((partido.estado as EstadoPartido) || 'programado');
+      setEstado((partido.estado as PartidoEstado) || 'programado');
       setFecha(toDatetimeLocal(partido.fecha));
     }
   }, [isOpen, partido]);
@@ -61,11 +60,12 @@ export const ModalEditarPartido = ({ partido, isOpen, onClose, onSaved }: ModalE
           <select id="modaleditarpartido-estado"
             className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
             value={estado}
-            onChange={(e) => setEstado(e.target.value as EstadoPartido)}
+            onChange={(e) => setEstado(e.target.value as PartidoEstado)}
           >
             <option value="programado">Programado</option>
             <option value="en_juego">En juego</option>
             <option value="finalizado">Finalizado</option>
+            <option value="suspendido">Suspendido</option>
             <option value="cancelado">Cancelado</option>
           </select>
         </div>

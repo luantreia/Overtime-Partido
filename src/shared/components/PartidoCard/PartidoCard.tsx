@@ -22,6 +22,10 @@ const badgeStyles = {
     label: 'Finalizado',
     className: 'bg-emerald-100 text-emerald-600',
   },
+  suspendido: {
+    label: 'Suspendido',
+    className: 'bg-amber-100 text-amber-800',
+  },
   cancelado: {
     label: 'Cancelado',
     className: 'bg-red-100 text-red-600',
@@ -37,7 +41,7 @@ const PartidoCard = ({ partido, variante = 'proximo', actions, onClick }: Partid
 
   const estado = partido.estado || 'programado';
   const badge = badgeStyles[estado as keyof typeof badgeStyles] || badgeStyles.programado;
-  const mostrarMarcador = estado === 'finalizado' || estado === 'en_juego';
+  const mostrarMarcador = estado === 'finalizado' || estado === 'en_juego' || estado === 'suspendido';
 
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (!onClick) return;

@@ -1,3 +1,5 @@
+import type { PartidoEstado } from '../shared/types/modelos.generado';
+
 export * from './solicitudesEdicion';
 
 export type RolUsuario = 'admin' | 'manager' | 'staff' | 'lector';
@@ -97,7 +99,7 @@ export interface Partido {
     };
     fecha?: string;
     hora?: string;
-    estado?: 'programado' | 'en_juego' | 'finalizado' | 'cancelado';
+    estado?: PartidoEstado;
     resultado?: {
         puntosEquipo: number;
         puntosRival: number;

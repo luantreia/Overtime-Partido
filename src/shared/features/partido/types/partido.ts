@@ -1,10 +1,12 @@
+import type { PartidoEstado } from '../../../types/modelos.generado';
+
 export interface Partido {
   _id: string;
   nombrePartido?: string;
   fecha?: string;
   hora?: string;
   ubicacion?: string;
-  estado?: 'programado' | 'en_juego' | 'finalizado' | 'cancelado';
+  estado?: PartidoEstado;
   equipoLocal?: {
     _id: string;
     nombre: string;

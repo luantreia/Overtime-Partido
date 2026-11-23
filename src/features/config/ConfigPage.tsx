@@ -10,7 +10,7 @@ import { ModalEditarResultado } from '../../shared/features/partido/components/m
 import { ModalAlineacionPartido } from '../../shared/features/partido/components/modals/ModalAlineacionPartido';
 import { EstadisticasPartidoModal } from '../../shared/components/EstadisticasPartidoModal';
 
-type EstadoFiltro = 'activos' | 'programado' | 'en_juego' | 'finalizado' | 'cancelado' | 'todos';
+type EstadoFiltro = 'activos' | 'programado' | 'en_juego' | 'finalizado' | 'suspendido' | 'cancelado' | 'todos';
 
 const ESTADOS_ACTIVOS: Array<Partido['estado']> = ['programado', 'en_juego'];
 
@@ -52,7 +52,7 @@ export const ConfigPage = () => {
   }, [loadData]);
 
   const conteos = useMemo(() => {
-    const c: Record<string, number> = { programado: 0, en_juego: 0, finalizado: 0, cancelado: 0 };
+    const c: Record<string, number> = { programado: 0, en_juego: 0, finalizado: 0, suspendido: 0, cancelado: 0 };
     partidos.forEach((p) => {
       const estado = p.estado || 'programado';
       c[estado] = (c[estado] || 0) + 1;
@@ -131,6 +131,7 @@ export const ConfigPage = () => {
     { key: 'programado', label: 'Programados' },
     { key: 'en_juego', label: 'En juego' },
     { key: 'finalizado', label: 'Finalizados' },
+    { key: 'suspendido', label: 'Suspendidos' },
     { key: 'cancelado', label: 'Cancelados' },
     { key: 'todos', label: 'Todos' },
   ];
@@ -225,6 +226,17 @@ export const ConfigPage = () => {
               title="Ver Estadísticas"
             >
               Stats
+            </button>
+          </div>
+        );
+      case 'suspendido':
+        return (
+          <div className="flex gap-2 justify-end flex-wrap">
+            <button
+              onClick={() => setPartidoEnEdicion(partido)}
+              className={BTN_SEC}
+            >
+              Editar
             </button>
           </div>
         );
