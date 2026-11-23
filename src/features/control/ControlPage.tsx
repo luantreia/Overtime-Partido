@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { socket } from '../../services/socket';
 import { authFetch } from '../../shared/utils/authFetch';
+import { CapturaSetOficial, crearApiCaptura, type Fetcher } from 'overtime-kit/captura';
 import { useToast } from '../../shared/components/Toast/ToastProvider';
 import OverlayScoreboard from '../overlay/OverlayScoreboard';
 import { useDriftFreeTimers } from '../../shared/hooks/useDriftFreeTimers';
@@ -10,6 +11,11 @@ import ModalBase from '../../shared/components/ModalBase/ModalBase';
 import { listSets, createSet, finishSetApi, reopenSetApi, deleteSetApi, changeWinnerApi, SetPartidoDTO } from '../../shared/features/partido/services/setService';
 import { showOverlay, hideOverlay } from '../../shared/services/overlayService';
 import { extraerYoutubeId } from '../../shared/utils/youtube';
+
+// Captura de outs en vivo (overtime-kit/captura). A nivel de módulo para que no recargue en cada render.
+const fetcherCaptura: Fetcher = (ruta, init) =>
+  authFetch(ruta, { method: init?.method ?? 'GET', body: init?.body ? JSON.parse(init.body) : undefined });
+const apiCaptura = crearApiCaptura(fetcherCaptura);
 
 type SetPartido = SetPartidoDTO;
 
@@ -45,6 +51,7 @@ export const ControlPage: React.FC = () => {
   const [matchData, setMatchData] = useState<any>(null);
   const [sets, setSets] = useState<SetPartido[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [capturaOuts, setCapturaOuts] = useState(false);
   const [showSetTimerOnOverlay, setShowSetTimerOnOverlay] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -72,6 +79,16 @@ export const ControlPage: React.FC = () => {
   });
 
   const { matchTime, setTimer, suddenDeathTime, period, isMatchRunning, isSetRunning, isSuddenDeathActive, suddenDeathMode } = timersState;
+  // Reloj de partido para la captura en vivo: segundos jugados desde el inicio del partido
+  // (cada período dura matchDurationMinutes y el timer cuenta para atrás). Por ref: la captura
+  // lo lee en el momento del clic, no en el render.
+  const relojPartido = useRef({ matchTime, period });
+  relojPartido.current = { matchTime, period };
+  const segundoDePartido = useCallback(() => {
+    const { matchTime: mt, period: p } = relojPartido.current;
+    const dur = matchDurationMinutes * 60;
+    return Math.max(0, ((p || 1) - 1) * dur + (dur - mt));
+  }, []);
 
   // Refs to avoid infinite dependency loops in callbacks
   const matchDataRef = useRef<any>(null);
@@ -633,6 +650,32 @@ export const ControlPage: React.FC = () => {
                   <button onClick={() => startNewSet(false)} disabled={isSaving} className={`[touch-action:manipulation] active:scale-95 w-full bg-green-600 text-white rounded-lg font-bold text-lg py-4 hover:bg-green-700 shadow-sm flex items-center justify-center gap-2 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664l-3-2z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>Iniciar Set {sets.length + 1}</span></button>
                 )}
               </div>
+
+              {currentSet && (
+                <div className="mt-3 border-t border-slate-100 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setCapturaOuts((v) => !v)}
+                    aria-expanded={capturaOuts}
+                    className="text-sm font-semibold text-brand-700 hover:underline"
+                  >
+                    {capturaOuts ? 'Ocultar outs del set' : `Marcar outs del set ${currentSet.numeroSet} (vivos en vivo)`}
+                  </button>
+                  {capturaOuts && matchId && (
+                    <div className="mt-2">
+                      <CapturaSetOficial
+                        key={currentSet._id}
+                        api={apiCaptura}
+                        fetcher={fetcherCaptura}
+                        partidoId={matchId}
+                        setPartidoId={currentSet._id}
+                        obtenerTiempo={segundoDePartido}
+                        origen="en_vivo"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Toggles secundarios, discretos al pie de la tarjeta */}
               <div className="flex items-center justify-center gap-4 mt-3 pt-2 border-t border-slate-100">
