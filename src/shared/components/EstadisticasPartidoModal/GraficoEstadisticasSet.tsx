@@ -12,8 +12,8 @@ export const GraficoEstadisticasSet: FC<GraficoEstadisticasSetProps> = ({ setId 
   return (
     <div className="bg-white p-6 rounded-lg shadow">
       <h4 className="text-lg font-semibold mb-4">Gráfico de Estadísticas del Set</h4>
-      <p className="text-gray-600">Set ID: {setId}</p>
-      <p className="text-sm text-gray-500 mt-2">
+      <p className="text-slate-600">Set ID: {setId}</p>
+      <p className="text-sm text-slate-500 mt-2">
         Implementación completa requiere configuración de Recharts y datos detallados.
       </p>
     </div>

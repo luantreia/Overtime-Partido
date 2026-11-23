@@ -195,7 +195,7 @@ export const ModalEditarResultado = ({ partido, isOpen, onClose, onSaved }: Moda
             type="button"
             onClick={handleGuardarMarcador}
             disabled={savingMarcador}
-            className="px-4 py-1.5 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="px-4 py-1.5 text-sm font-bold text-white bg-brand-600 rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors"
           >
             {savingMarcador ? 'Guardando…' : 'Guardar marcador'}
           </button>

@@ -17,7 +17,7 @@ export const EstadisticasGeneralesHeader: FC<EstadisticasGeneralesHeaderProps> =
       <div className="mt-2">
         <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
           modoEstadisticasUI === 'automatico'
-            ? 'bg-blue-100 text-blue-800 border border-blue-200'
+            ? 'bg-brand-100 text-brand-800 border border-brand-200'
             : 'bg-green-100 text-green-800 border border-green-200'
         }`}>
           {modoEstadisticasUI === 'automatico' ? '📊 Automático (por Set)' : '✏️ Manual (Totales)'}

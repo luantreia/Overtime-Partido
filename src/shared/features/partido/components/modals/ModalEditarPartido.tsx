@@ -56,9 +56,9 @@ export const ModalEditarPartido = ({ partido, isOpen, onClose, onSaved }: ModalE
     <ModalBase isOpen={isOpen} onClose={onClose} title="Editar partido" size="sm">
       <div className="p-6 space-y-4">
         <div>
-          <label htmlFor="modaleditarpartido-estado" className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+          <label htmlFor="modaleditarpartido-estado" className="block text-sm font-medium text-slate-700 mb-1">Estado</label>
           <select id="modaleditarpartido-estado"
-            className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            className="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
             value={estado}
             onChange={(e) => setEstado(e.target.value as PartidoEstado)}
           >
@@ -71,10 +71,10 @@ export const ModalEditarPartido = ({ partido, isOpen, onClose, onSaved }: ModalE
         </div>
 
         <div>
-          <label htmlFor="modaleditarpartido-fecha-y-hora" className="block text-sm font-medium text-gray-700 mb-1">Fecha y hora</label>
+          <label htmlFor="modaleditarpartido-fecha-y-hora" className="block text-sm font-medium text-slate-700 mb-1">Fecha y hora</label>
           <input id="modaleditarpartido-fecha-y-hora"
             type="datetime-local"
-            className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            className="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
             value={fecha}
             onChange={(e) => setFecha(e.target.value)}
           />
@@ -85,7 +85,7 @@ export const ModalEditarPartido = ({ partido, isOpen, onClose, onSaved }: ModalE
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 font-medium transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 font-medium transition-colors disabled:opacity-50"
           >
             Cancelar
           </button>
@@ -93,7 +93,7 @@ export const ModalEditarPartido = ({ partido, isOpen, onClose, onSaved }: ModalE
             type="button"
             onClick={handleGuardar}
             disabled={saving}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-md transition-colors disabled:opacity-50"
+            className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-bold shadow-md transition-colors disabled:opacity-50"
           >
             {saving ? 'Guardando…' : 'Guardar'}
           </button>

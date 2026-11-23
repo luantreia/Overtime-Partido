@@ -123,7 +123,7 @@ export const CameraCapturePage: React.FC = () => {
   // Invalid slot
   if (!validSlot) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <div className="min-h-dvh bg-slate-900 flex items-center justify-center p-4">
         <div className="bg-red-900/50 text-red-200 p-6 rounded-lg text-center max-w-md">
           <h1 className="text-xl font-bold mb-2">Slot Inválido</h1>
           <p>El slot de cámara "{slot}" no es válido.</p>
@@ -143,7 +143,7 @@ export const CameraCapturePage: React.FC = () => {
       case 'error':
         return { color: 'bg-red-500', text: 'Error', pulse: false };
       default:
-        return { color: 'bg-gray-500', text: 'Desconectado', pulse: false };
+        return { color: 'bg-slate-500', text: 'Desconectado', pulse: false };
     }
   };
 
@@ -172,10 +172,10 @@ export const CameraCapturePage: React.FC = () => {
   // Source picker screen
   if (showSourcePicker && !localStream) {
     return (
-      <div className="min-h-screen bg-gray-900 flex flex-col">
-        <header className="bg-gray-800 px-4 py-3 flex items-center justify-between">
+      <div className="min-h-dvh bg-slate-900 flex flex-col">
+        <header className="bg-slate-800 px-4 py-3 flex items-center justify-between">
           <div className="text-white font-medium">Seleccionar Fuente</div>
-          <div className="text-gray-400 text-sm">
+          <div className="text-slate-400 text-sm">
             {slot?.toUpperCase()} • Match: {matchId?.slice(-6)}
           </div>
         </header>
@@ -189,17 +189,17 @@ export const CameraCapturePage: React.FC = () => {
             {/* Camera option */}
             <button
               onClick={() => handleSelectSource('camera')}
-              className="w-full bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl p-6 text-left transition group"
+              className="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl p-6 text-left transition group"
             >
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center group-hover:bg-blue-500 transition">
+                <div className="w-16 h-16 rounded-full bg-brand-600 flex items-center justify-center group-hover:bg-brand-500 transition">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                   </svg>
                 </div>
                 <div>
                   <h3 className="text-white font-bold text-lg">Cámara</h3>
-                  <p className="text-gray-400 text-sm">Usa la cámara del dispositivo</p>
+                  <p className="text-slate-400 text-sm">Usa la cámara del dispositivo</p>
                 </div>
               </div>
             </button>
@@ -207,7 +207,7 @@ export const CameraCapturePage: React.FC = () => {
             {/* Screen option */}
             <button
               onClick={() => handleSelectSource('screen')}
-              className="w-full bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl p-6 text-left transition group"
+              className="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl p-6 text-left transition group"
             >
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-purple-600 flex items-center justify-center group-hover:bg-purple-500 transition">
@@ -217,12 +217,12 @@ export const CameraCapturePage: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-white font-bold text-lg">Pantalla</h3>
-                  <p className="text-gray-400 text-sm">Comparte tu pantalla o ventana</p>
+                  <p className="text-slate-400 text-sm">Comparte tu pantalla o ventana</p>
                 </div>
               </div>
             </button>
 
-            <p className="text-gray-500 text-xs text-center mt-6">
+            <p className="text-slate-500 text-xs text-center mt-6">
               Tip: Usa ?source=screen o ?source=camera en la URL para saltar este paso
             </p>
           </div>
@@ -232,9 +232,9 @@ export const CameraCapturePage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col">
+    <div className="min-h-dvh bg-slate-900 flex flex-col">
       {/* Header */}
-      <header className="bg-gray-800 px-4 py-3 flex items-center justify-between">
+      <header className="bg-slate-800 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           {/* Status indicator */}
           <div className="flex items-center gap-2">
@@ -242,7 +242,7 @@ export const CameraCapturePage: React.FC = () => {
             <span className="text-white text-sm font-medium">{statusInfo.text}</span>
           </div>
           {/* Source indicator */}
-          <div className="flex items-center gap-1 bg-gray-700 px-2 py-0.5 rounded text-xs text-gray-300">
+          <div className="flex items-center gap-1 bg-slate-700 px-2 py-0.5 rounded text-xs text-slate-300">
             {captureSource === 'screen' ? (
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -256,7 +256,7 @@ export const CameraCapturePage: React.FC = () => {
           </div>
         </div>
         
-        <div className="text-gray-400 text-sm">
+        <div className="text-slate-400 text-sm">
           {slot?.toUpperCase()} • Match: {matchId?.slice(-6)}
         </div>
       </header>
@@ -289,8 +289,8 @@ export const CameraCapturePage: React.FC = () => {
 
         {/* No camera overlay */}
         {!localStream && !error && (
-          <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
-            <div className="text-center text-gray-400">
+          <div className="absolute inset-0 bg-slate-800 flex items-center justify-center">
+            <div className="text-center text-slate-400">
               <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
               </svg>
@@ -309,7 +309,7 @@ export const CameraCapturePage: React.FC = () => {
                 </svg>
               </div>
               <h3 className="text-xl font-bold mb-2">📱 Gira tu dispositivo</h3>
-              <p className="text-gray-300 text-sm">
+              <p className="text-slate-300 text-sm">
                 Coloca el celular en posición horizontal para una mejor transmisión
               </p>
               <div className="mt-4 flex items-center justify-center gap-2 text-yellow-400 text-xs">
@@ -343,7 +343,7 @@ export const CameraCapturePage: React.FC = () => {
       </div>
 
       {/* Controls */}
-      <div className="bg-gray-800 px-4 py-4 safe-area-bottom">
+      <div className="bg-slate-800 px-4 py-4 safe-area-bottom">
         <div className="flex items-center justify-around max-w-lg mx-auto">
           {/* Switch Source */}
           <button
@@ -351,7 +351,7 @@ export const CameraCapturePage: React.FC = () => {
             disabled={!localStream}
             className="flex flex-col items-center gap-1 text-white disabled:opacity-50"
           >
-            <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center">
               {captureSource === 'camera' ? (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -371,7 +371,7 @@ export const CameraCapturePage: React.FC = () => {
             disabled={!localStream || captureSource !== 'camera'}
             className="flex flex-col items-center gap-1 text-white disabled:opacity-50"
           >
-            <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
@@ -385,7 +385,7 @@ export const CameraCapturePage: React.FC = () => {
             disabled={!localStream}
             className="flex flex-col items-center gap-1 text-white disabled:opacity-50"
           >
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${isMuted ? 'bg-red-600' : 'bg-gray-700'}`}>
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${isMuted ? 'bg-red-600' : 'bg-slate-700'}`}>
               {isMuted ? (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
@@ -406,7 +406,7 @@ export const CameraCapturePage: React.FC = () => {
               value={quality}
               onChange={(e) => setQuality(e.target.value as VideoQuality)}
               disabled={!localStream}
-              className="w-12 h-12 rounded-full bg-gray-700 text-center text-xs appearance-none cursor-pointer disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-12 h-12 rounded-full bg-slate-700 text-center text-xs appearance-none bg-none pr-0 cursor-pointer disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-brand-500"
               style={{ textAlignLast: 'center' }}
             >
               <option value="low">360p</option>

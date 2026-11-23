@@ -260,8 +260,8 @@ export const ConfigPage = () => {
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Mis Partidos</h1>
-          <p className="text-gray-500 mt-1">Gestión de encuentros y transmisiones</p>
+          <h1 className="text-3xl font-bold text-slate-900">Mis Partidos</h1>
+          <p className="text-slate-500 mt-1">Gestión de encuentros y transmisiones</p>
         </div>
       </div>
 
@@ -293,12 +293,12 @@ export const ConfigPage = () => {
             onClick={() => setFiltroEstado(pill.key)}
             className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
               filtroEstado === pill.key
-                ? 'bg-blue-600 text-white border-blue-600'
+                ? 'bg-brand-600 text-white border-brand-600'
                 : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
             }`}
           >
             {pill.label}
-            <span className={`ml-1.5 ${filtroEstado === pill.key ? 'text-blue-100' : 'text-muted'}`}>
+            <span className={`ml-1.5 ${filtroEstado === pill.key ? 'text-brand-100' : 'text-muted'}`}>
               ({conteos[pill.key] ?? 0})
             </span>
           </button>

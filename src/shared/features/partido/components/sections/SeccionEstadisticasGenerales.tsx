@@ -38,11 +38,11 @@ export const SeccionEstadisticasGenerales: FC<SeccionEstadisticasGeneralesProps>
     : undefined;
 
   return (
-    <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+    <div className="rounded-lg border border-brand-200 bg-brand-50 p-4">
       <div className="mb-4 flex items-center justify-between gap-4">
         <div>
-          <h4 className="text-lg font-semibold text-blue-800">📊 Estadísticas Generales</h4>
-          <p className="text-sm text-blue-700">{descripcion}</p>
+          <h4 className="text-lg font-semibold text-brand-800">📊 Estadísticas Generales</h4>
+          <p className="text-sm text-brand-700">{descripcion}</p>
         </div>
       </div>
       <EstadisticasGeneralesPartido

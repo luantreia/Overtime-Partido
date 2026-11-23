@@ -21,11 +21,11 @@ export const StatsPage = () => {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold mb-4 text-gray-800">Estadísticas en Vivo</h1>
-      <h2 className="text-xl text-gray-600 mb-8">{matchData.equipoLocal?.nombre} vs {matchData.equipoVisitante?.nombre}</h2>
+      <h1 className="text-3xl font-bold mb-4 text-slate-800">Estadísticas en Vivo</h1>
+      <h2 className="text-xl text-slate-600 mb-8">{matchData.equipoLocal?.nombre} vs {matchData.equipoVisitante?.nombre}</h2>
 
-      <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
-        <p className="text-gray-500 italic">
+      <div className="bg-white p-6 rounded-lg shadow border border-slate-200">
+        <p className="text-slate-500 italic">
           El módulo de carga de estadísticas set a set está en desarrollo.
           Aquí el asistente podrá cargar puntos, asistencias y bloqueos en tiempo real.
         </p>

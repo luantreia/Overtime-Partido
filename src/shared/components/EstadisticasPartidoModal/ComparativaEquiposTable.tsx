@@ -32,14 +32,14 @@ export const ComparativaEquiposTable: FC<ComparativaEquiposTableProps> = ({ esta
             Comparativa Rápida por Equipo
             <span className={`ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
               modoEstadisticasUI === 'automatico'
-                ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                ? 'bg-brand-100 text-brand-800 border border-brand-200'
                 : 'bg-green-100 text-green-800 border border-green-200'
             }`}>
               {modoEstadisticasUI === 'automatico' ? '📊 Auto' : '✏️ Manual'}
             </span>
           </h4>
         </div>
-        <div className="text-center text-gray-500 py-8">
+        <div className="text-center text-slate-500 py-8">
           <p>No hay datos de equipos para mostrar en este modo.</p>
         </div>
       </div>
@@ -53,7 +53,7 @@ export const ComparativaEquiposTable: FC<ComparativaEquiposTableProps> = ({ esta
           Comparativa Rápida por Equipo
           <span className={`ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
             modoEstadisticasUI === 'automatico'
-              ? 'bg-blue-100 text-blue-800 border border-blue-200'
+              ? 'bg-brand-100 text-brand-800 border border-brand-200'
               : 'bg-green-100 text-green-800 border border-green-200'
           }`}>
             {modoEstadisticasUI === 'automatico' ? '📊 Auto' : '✏️ Manual'}
@@ -75,7 +75,7 @@ export const ComparativaEquiposTable: FC<ComparativaEquiposTableProps> = ({ esta
             cell: (equipo) => (
               <div className="flex items-center whitespace-nowrap">
                 {equipo.escudo && <img src={equipo.escudo} alt="" className="w-8 h-8 object-contain mr-3" />}
-                <span className="font-medium text-gray-900">{equipo.nombre ?? 'Equipo'}</span>
+                <span className="font-medium text-slate-900">{equipo.nombre ?? 'Equipo'}</span>
               </div>
             ),
           },

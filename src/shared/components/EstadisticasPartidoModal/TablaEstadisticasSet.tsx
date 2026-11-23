@@ -90,7 +90,7 @@ const TablaEstadisticasSet: FC<TablaEstadisticasSetProps> = ({ setId }) => {
 
   if (loading) {
     return (
-      <div className="text-center py-4 text-gray-600">
+      <div className="text-center py-4 text-slate-600">
         <span className="text-sm">Cargando estadísticas...</span>
       </div>
     );
@@ -106,7 +106,7 @@ const TablaEstadisticasSet: FC<TablaEstadisticasSetProps> = ({ setId }) => {
 
   if (estadisticas.length === 0) {
     return (
-      <div className="text-center py-4 text-gray-500">
+      <div className="text-center py-4 text-slate-500">
         <span className="text-sm">No hay estadísticas capturadas para este set</span>
       </div>
     );
@@ -141,27 +141,27 @@ const TablaEstadisticasSet: FC<TablaEstadisticasSetProps> = ({ setId }) => {
 
           {/* Tabla de jugadores */}
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-slate-200">
+              <thead className="bg-slate-50">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-4 py-2 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">
                     Jugador
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-3 py-2 text-center text-xs font-medium text-slate-700 uppercase tracking-wider">
                     Lanzamientos
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-3 py-2 text-center text-xs font-medium text-slate-700 uppercase tracking-wider">
                     Golpes
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-3 py-2 text-center text-xs font-medium text-slate-700 uppercase tracking-wider">
                     Outs
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-3 py-2 text-center text-xs font-medium text-slate-700 uppercase tracking-wider">
                     Atrapadas
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-slate-200">
                 {equipoData.jugadores.map((stat, index) => {
                   let jugadorNombre = 'Jugador';
 
@@ -178,20 +178,20 @@ const TablaEstadisticasSet: FC<TablaEstadisticasSetProps> = ({ setId }) => {
                   }
 
                   return (
-                    <tr key={stat._id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                      <td className="px-4 py-2 text-sm text-gray-900 whitespace-nowrap">
+                    <tr key={stat._id} className={index % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                      <td className="px-4 py-2 text-sm text-slate-900 whitespace-nowrap">
                         {jugadorNombre}
                       </td>
-                      <td className="px-3 py-2 text-sm text-gray-900 text-center">
+                      <td className="px-3 py-2 text-sm text-slate-900 text-center">
                         {stat.throws || 0}
                       </td>
-                      <td className="px-3 py-2 text-sm text-gray-900 text-center">
+                      <td className="px-3 py-2 text-sm text-slate-900 text-center">
                         {stat.hits || 0}
                       </td>
-                      <td className="px-3 py-2 text-sm text-gray-900 text-center">
+                      <td className="px-3 py-2 text-sm text-slate-900 text-center">
                         {stat.outs || 0}
                       </td>
-                      <td className="px-3 py-2 text-sm text-gray-900 text-center">
+                      <td className="px-3 py-2 text-sm text-slate-900 text-center">
                         {stat.catches || 0}
                       </td>
                     </tr>

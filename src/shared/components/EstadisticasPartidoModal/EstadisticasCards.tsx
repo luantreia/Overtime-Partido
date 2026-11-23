@@ -49,7 +49,7 @@ export const EstadisticasCards: FC<EstadisticasCardsProps> = ({ estadisticas }) 
         <StatCard
           title="Total Lanzamientos"
           value={totales.throws}
-          color="bg-blue-100 text-blue-800"
+          color="bg-brand-100 text-brand-800"
         />
         <StatCard
           title="Total Golpes"
@@ -72,16 +72,16 @@ export const EstadisticasCards: FC<EstadisticasCardsProps> = ({ estadisticas }) 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white p-6 rounded-lg shadow text-center">
           <div className="text-3xl font-bold text-purple-600 mb-2">{efectividadGeneral}%</div>
-          <div className="text-sm text-gray-600">Efectividad General</div>
-          <div className="text-xs text-gray-500 mt-1">(Golpes/Lanzamientos)</div>
+          <div className="text-sm text-slate-600">Efectividad General</div>
+          <div className="text-xs text-slate-500 mt-1">(Golpes/Lanzamientos)</div>
         </div>
         <div className="bg-white p-6 rounded-lg shadow text-center">
-          <div className="text-3xl font-bold text-indigo-600 mb-2">{equiposData.length}</div>
-          <div className="text-sm text-gray-600">Equipos Participantes</div>
+          <div className="text-3xl font-bold text-brand-600 mb-2">{equiposData.length}</div>
+          <div className="text-sm text-slate-600">Equipos Participantes</div>
         </div>
         <div className="bg-white p-6 rounded-lg shadow text-center">
           <div className="text-3xl font-bold text-orange-600 mb-2">{estadisticas.jugadores?.length ?? 0}</div>
-          <div className="text-sm text-gray-600">Jugadores Totales</div>
+          <div className="text-sm text-slate-600">Jugadores Totales</div>
         </div>
       </div>
     </div>

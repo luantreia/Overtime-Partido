@@ -28,7 +28,7 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
+    <div className="flex min-h-dvh items-center justify-center bg-slate-50 p-4">
       <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <h1 className="mb-4 text-xl font-semibold text-slate-900 text-center">Acceso Gestión Partido</h1>
         <form className="space-y-3" onSubmit={handleSubmit}>
@@ -41,12 +41,12 @@ const LoginPage: React.FC = () => {
             <input id="loginpage-password" className="w-full rounded-lg border border-slate-300 px-3 py-2" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
-          <button className="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-50" disabled={loading} type="submit">
+          <button className="w-full rounded-lg bg-brand-600 px-4 py-2 font-medium text-white hover:bg-brand-700 disabled:opacity-50" disabled={loading} type="submit">
             {loading ? 'Ingresando…' : 'Ingresar'}
           </button>
         </form>
         <div className="mt-4 text-center text-sm">
-          <p>¿No tienes cuenta? <Link to="/register" className="text-blue-600 hover:underline">Regístrate aquí</Link></p>
+          <p>¿No tienes cuenta? <Link to="/register" className="text-brand-600 hover:underline">Regístrate aquí</Link></p>
         </div>
       </div>
     </div>

@@ -42,15 +42,15 @@ function AppContent() {
       {/* Rutas de Gestión: Con Layout y Protegidas */}
       <Route path="*" element={
         <ProtectedRoute>
-          <div className="min-h-screen bg-gray-100">
-            <nav className="bg-blue-600 text-white p-4 shadow-md">
+          <div className="min-h-dvh bg-slate-50">
+            <nav className="bg-brand-600 text-white p-4 shadow-md">
               <div className="container mx-auto flex justify-between items-center">
                 <div className="text-xl font-bold">Overtime Gestión</div>
                 <div className="flex items-center space-x-4">
-                  <Link to="/config" className="hover:text-blue-200">Mis partidos</Link>
-                  <div className="ml-4 flex items-center gap-2 border-l pl-4 border-blue-400">
+                  <Link to="/config" className="hover:text-brand-200">Mis partidos</Link>
+                  <div className="ml-4 flex items-center gap-2 border-l pl-4 border-brand-400">
                     <span className="text-sm">{user?.nombre}</span>
-                    <button onClick={logout} className="text-sm bg-blue-700 px-2 py-1 rounded hover:bg-blue-800">Salir</button>
+                    <button onClick={logout} className="text-sm bg-brand-700 px-2 py-1 rounded hover:bg-brand-800">Salir</button>
                   </div>
                 </div>
               </div>

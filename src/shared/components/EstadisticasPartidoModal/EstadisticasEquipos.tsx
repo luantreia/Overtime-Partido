@@ -28,7 +28,7 @@ export function renderEstadisticasEquipos(estadisticas: EstadisticasEquiposData,
                       />
                     )}
                     <h4 className="text-lg font-bold">{equipo.nombre ?? 'Equipo'}</h4>
-                    <span className="text-sm text-gray-500 ml-auto">
+                    <span className="text-sm text-slate-500 ml-auto">
                       {equipo.jugadores ?? 0} jugador{equipo.jugadores === 1 ? '' : 'es'}
                     </span>
                     {/* Indicador de fuente de datos */}
@@ -39,7 +39,7 @@ export function renderEstadisticasEquipos(estadisticas: EstadisticasEquiposData,
                         const fuente = fuentesUnicas[0];
                         return (
                           <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-2 ${
-                            typeof fuente === 'string' && fuente.includes('manual') ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                            typeof fuente === 'string' && fuente.includes('manual') ? 'bg-brand-100 text-brand-800' : 'bg-green-100 text-green-800'
                           }`}>
                             {typeof fuente === 'string' && fuente.includes('manual') ? '✏️ Manual' : '🤖 Automática'}
                           </div>
@@ -59,7 +59,7 @@ export function renderEstadisticasEquipos(estadisticas: EstadisticasEquiposData,
                     <StatCard
                       title="Lanzamientos"
                       value={equipo.throws ?? 0}
-                      color="bg-blue-100 text-blue-800"
+                      color="bg-brand-100 text-brand-800"
                     />
                     <StatCard
                       title="Golpes"
@@ -77,8 +77,8 @@ export function renderEstadisticasEquipos(estadisticas: EstadisticasEquiposData,
                       color="bg-yellow-100 text-yellow-800"
                     />
                     <div className="col-span-2">
-                      <div className="text-center p-2 bg-gray-50 rounded">
-                        <div className="text-sm text-gray-600">Efectividad</div>
+                      <div className="text-center p-2 bg-slate-50 rounded">
+                        <div className="text-sm text-slate-600">Efectividad</div>
                         <div className="text-xl font-bold">{equipo.efectividad ?? 0}%</div>
                       </div>
                     </div>
@@ -108,7 +108,7 @@ export function renderEstadisticasEquipos(estadisticas: EstadisticasEquiposData,
             </div>
           </>
         ) : (
-          <p className="text-gray-600">No hay estadísticas de equipos disponibles aún</p>
+          <p className="text-slate-600">No hay estadísticas de equipos disponibles aún</p>
         );
       })()}
     </div>

@@ -28,7 +28,7 @@ export const PartidoTable: React.FC<PartidoTableProps> = ({
       case 'finalizado': return 'bg-green-100 text-green-800';
       case 'suspendido': return 'bg-amber-100 text-amber-800';
       case 'cancelado': return 'bg-red-100 text-red-800';
-      default: return 'bg-blue-100 text-blue-800';
+      default: return 'bg-brand-100 text-brand-800';
     }
   };
 
@@ -53,7 +53,7 @@ export const PartidoTable: React.FC<PartidoTableProps> = ({
       {/* Mobile View (Cards) */}
       <div className="block md:hidden divide-y divide-slate-200">
         {partidos.map((p) => (
-          <div key={p._id} className={`p-4 ${selectedIds.has(p._id) ? 'bg-blue-50' : ''}`}>
+          <div key={p._id} className={`p-4 ${selectedIds.has(p._id) ? 'bg-brand-50' : ''}`}>
             <div className="flex justify-between items-start mb-3">
               <div className="flex items-center gap-2 text-xs text-slate-500">
                 <span className={`inline-block px-2 py-0.5 rounded-full font-semibold ${getEstadoColor(p.estado || 'programado')}`}>
@@ -111,7 +111,7 @@ export const PartidoTable: React.FC<PartidoTableProps> = ({
             <div className="pt-3 border-t border-slate-100 flex justify-end gap-2">
               {renderActions ? renderActions(p) : (
                 <>
-                  <button onClick={() => onEdit(p)} className="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded">Editar</button>
+                  <button onClick={() => onEdit(p)} className="px-3 py-1.5 text-xs font-medium text-brand-700 bg-brand-50 rounded">Editar</button>
                   <button onClick={() => onDelete(p._id)} className="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 rounded">Eliminar</button>
                 </>
               )}
@@ -144,7 +144,7 @@ export const PartidoTable: React.FC<PartidoTableProps> = ({
           </thead>
           <tbody className="divide-y divide-slate-200">
             {partidos.map((p) => (
-              <tr key={p._id} className={`hover:bg-slate-50 transition ${selectedIds.has(p._id) ? 'bg-blue-50' : ''}`}>
+              <tr key={p._id} className={`hover:bg-slate-50 transition ${selectedIds.has(p._id) ? 'bg-brand-50' : ''}`}>
                 <td className="px-3 py-4 w-12">
                   <input
                     type="checkbox"
@@ -206,7 +206,7 @@ export const PartidoTable: React.FC<PartidoTableProps> = ({
                       <>
                         <button
                           onClick={() => onEdit(p)}
-                          className="rounded px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 transition"
+                          className="rounded px-3 py-1.5 text-xs font-medium text-brand-700 bg-brand-50 hover:bg-brand-100 transition"
                         >
                           Editar
                         </button>

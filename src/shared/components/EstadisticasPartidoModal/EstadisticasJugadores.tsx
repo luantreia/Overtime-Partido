@@ -36,7 +36,7 @@ export const renderEstadisticasJugadores = (
           header: 'Jugador',
           sortValue: (j) => `${jugadorDe(j)?.nombre ?? ''} ${jugadorDe(j)?.apellido ?? ''}`.trim() || null,
           cell: (j) => (
-            <span className="whitespace-nowrap font-medium text-gray-900">
+            <span className="whitespace-nowrap font-medium text-slate-900">
               {jugadorDe(j)?.nombre ?? 'Sin nombre'} {jugadorDe(j)?.apellido ?? ''}
             </span>
           ),

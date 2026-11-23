@@ -511,9 +511,9 @@ export const ControlPage: React.FC = () => {
   };
 
   if (!matchData || isLoading) return (
-    <div className="h-screen flex items-center justify-center bg-slate-50">
+    <div className="h-dvh flex items-center justify-center bg-slate-50">
       <div className="flex flex-col items-center gap-2">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-brand-600 border-t-transparent rounded-full animate-spin"></div>
         <span className="text-slate-500 text-sm">Cargando partido...</span>
       </div>
     </div>
@@ -521,7 +521,7 @@ export const ControlPage: React.FC = () => {
   const currentSet = sets.find(s => s.estadoSet === 'en_juego');
 
   return (
-    <div className="h-screen bg-slate-50 flex flex-col overflow-hidden">
+    <div className="h-dvh bg-slate-50 flex flex-col overflow-hidden">
       <header className="bg-white border-b border-slate-200 px-2 sm:px-4 py-2 flex items-center gap-2 shrink-0 min-h-12">
         <button onClick={() => navigate('/config')} className="text-muted hover:text-slate-600 p-2 -m-1 shrink-0" aria-label="Volver"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg></button>
         {/* En mobile, lo que identifica el partido (equipos) importa más que el título de la pantalla */}
@@ -531,8 +531,8 @@ export const ControlPage: React.FC = () => {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {isSaving && (
-            <div className="flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded animate-pulse">
-              <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="flex items-center gap-1 text-xs text-brand-600 bg-brand-50 px-2 py-1 rounded animate-pulse">
+              <div className="w-3 h-3 border-2 border-brand-600 border-t-transparent rounded-full animate-spin"></div>
               <span className="hidden sm:inline">Guardando...</span>
             </div>
           )}
@@ -549,19 +549,24 @@ export const ControlPage: React.FC = () => {
             <div className="bg-white rounded-xl shadow-sm border border-emerald-100 p-3 flex flex-col overflow-hidden min-h-[300px]">
               {/* Timeline de sets: puntitos de color en vez de una lista expandible */}
               <div className="flex flex-wrap justify-center items-center gap-1 min-h-[24px]">
-                {sets.filter(s => s.estadoSet === 'finalizado').map((s) => (
-                  <div
-                    key={s._id}
-                    className={`group relative w-6 h-6 rounded-full flex items-center justify-center text-2xs font-bold text-white shadow-sm transition-transform hover:scale-110 ${
-                      s.ganadorSet === 'local' ? 'bg-red-500' : s.ganadorSet === 'visitante' ? 'bg-blue-500' : 'bg-slate-400'
-                    }`}
-                  >
-                    {s.numeroSet}
-                    <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-2xs px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 transition-opacity">
-                      {s.ganadorSet === 'local' ? matchData.equipoLocal?.nombre : s.ganadorSet === 'visitante' ? matchData.equipoVisitante?.nombre : 'Empate'}
+                {/* El nombre del ganador va visible debajo del número (abreviado): el hover no existe en tablet. */}
+                {sets.filter(s => s.estadoSet === 'finalizado').map((s) => {
+                  const nombreGanador = s.ganadorSet === 'local' ? matchData.equipoLocal?.nombre : s.ganadorSet === 'visitante' ? matchData.equipoVisitante?.nombre : undefined;
+                  return (
+                    <div key={s._id} className="flex flex-col items-center gap-0.5 w-8" title={nombreGanador ?? 'Empate'}>
+                      <div
+                        className={`w-6 h-6 rounded-full flex items-center justify-center text-2xs font-bold text-white shadow-sm ${
+                          s.ganadorSet === 'local' ? 'bg-red-500' : s.ganadorSet === 'visitante' ? 'bg-blue-500' : 'bg-slate-400'
+                        }`}
+                      >
+                        {s.numeroSet}
+                      </div>
+                      <span className="text-2xs font-semibold text-slate-600 leading-none truncate max-w-full">
+                        {nombreGanador ? nombreGanador.slice(0, 3).toUpperCase() : 'EMP'}
+                      </span>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 {sets.filter(s => s.estadoSet === 'finalizado').length === 0 && (
                   <span className="text-2xs text-muted italic">Esperando sets...</span>
                 )}
@@ -579,7 +584,7 @@ export const ControlPage: React.FC = () => {
                       <div className="flex justify-between items-center mb-1">
                         <span className="font-bold text-slate-600">Set {s.numeroSet}</span>
                         <div className="flex gap-1">
-                          <button onClick={() => reopenSet(s._id)} className="text-blue-600 hover:bg-blue-100 p-2 rounded" title="Reabrir"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg></button>
+                          <button onClick={() => reopenSet(s._id)} className="text-brand-600 hover:bg-brand-100 p-2 rounded" title="Reabrir"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg></button>
                           <button onClick={() => deleteSet(s._id)} className="text-red-600 hover:bg-red-100 p-2 rounded" title="Eliminar"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
                         </div>
                       </div>
@@ -599,9 +604,9 @@ export const ControlPage: React.FC = () => {
                   <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-2xl sm:text-3xl font-black rounded-xl bg-red-50 border border-red-100 text-red-700 tabular-nums">{localScore}</div>
                 </div>
                 <div className="flex flex-col items-center gap-0.5 px-1 shrink-0">
-                  <span className="text-2xs font-bold text-indigo-400 uppercase tracking-wider">Set</span>
-                  <span className={`font-mono text-lg sm:text-xl font-bold ${isSuddenDeathActive ? 'text-purple-600 animate-pulse' : (isSetRunning ? 'text-indigo-700' : 'text-indigo-300')}`}>{isSuddenDeathActive ? `+${formatTime(suddenDeathTime)}` : formatTime(setTimer)}</span>
-                  <button onClick={updateSetTimeManual} className="text-indigo-300 hover:text-indigo-500 p-1 -m-1" title="Editar tiempo de set manualmente"><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>
+                  <span className="text-2xs font-bold text-brand-400 uppercase tracking-wider">Set</span>
+                  <span className={`font-mono text-lg sm:text-xl font-bold ${isSuddenDeathActive ? 'text-purple-600 animate-pulse' : (isSetRunning ? 'text-brand-700' : 'text-brand-300')}`}>{isSuddenDeathActive ? `+${formatTime(suddenDeathTime)}` : formatTime(setTimer)}</span>
+                  <button onClick={updateSetTimeManual} className="[touch-action:manipulation] active:scale-95 text-brand-300 hover:text-brand-500 p-1 -m-1" title="Editar tiempo de set manualmente"><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>
                 </div>
                 <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
                   <span className="text-2xs font-black text-blue-600 uppercase tracking-tight truncate max-w-full">{matchData.equipoVisitante?.nombre}</span>
@@ -613,19 +618,19 @@ export const ControlPage: React.FC = () => {
               <div className="flex-1 flex flex-col justify-end">
                 {currentSet ? (
                   (!isSetRunning && !isSuddenDeathActive && isMatchRunning) ? (
-                    <button onClick={() => { controllerActions?.startSetIfNeeded(); }} className="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold text-base hover:bg-indigo-700 shadow-md animate-pulse flex flex-col items-center gap-0.5">
+                    <button onClick={() => { controllerActions?.startSetIfNeeded(); }} className="[touch-action:manipulation] active:scale-95 w-full bg-brand-600 text-white py-3 rounded-lg font-bold text-base hover:bg-brand-700 shadow-md animate-pulse flex flex-col items-center gap-0.5">
                       <span>⏱️ Arrancar cronómetro del Set {currentSet.numeroSet}</span>
                       <span className="text-[11px] font-normal opacity-80 normal-case">El reloj del partido ya está corriendo por separado</span>
                     </button>
                   ) : (
                     <div className={`grid ${matchData.modalidad === 'Cloth' ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}>
-                      <button onClick={() => finishSet(currentSet._id, 'local')} disabled={isSaving} className={`bg-red-600 text-white rounded-lg font-bold py-3 hover:bg-red-700 transition shadow-sm flex flex-col items-center justify-center ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><span className="truncate max-w-full px-1">{matchData.equipoLocal?.nombre}</span><span className="text-2xs font-normal opacity-75">Gana Set +{matchData.modalidad === 'Cloth' ? '2' : '1'}</span></button>
-                      <button onClick={() => finishSet(currentSet._id, 'visitante')} disabled={isSaving} className={`bg-blue-600 text-white rounded-lg font-bold py-3 hover:bg-blue-700 transition shadow-sm flex flex-col items-center justify-center ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><span className="truncate max-w-full px-1">{matchData.equipoVisitante?.nombre}</span><span className="text-2xs font-normal opacity-75">Gana Set +{matchData.modalidad === 'Cloth' ? '2' : '1'}</span></button>
-                      {matchData.modalidad === 'Cloth' && <button onClick={() => finishSet(currentSet._id, 'empate')} disabled={isSaving} className={`bg-slate-600 text-white rounded-lg font-bold py-3 hover:bg-slate-700 transition shadow-sm flex flex-col items-center justify-center ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><span>Empate</span><span className="text-2xs font-normal opacity-75">+1 c/u</span></button>}
+                      <button onClick={() => finishSet(currentSet._id, 'local')} disabled={isSaving} className={`[touch-action:manipulation] active:scale-95 bg-red-600 text-white rounded-lg font-bold py-3 hover:bg-red-700 transition shadow-sm flex flex-col items-center justify-center ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><span className="truncate max-w-full px-1">{matchData.equipoLocal?.nombre}</span><span className="text-2xs font-normal opacity-75">Gana Set +{matchData.modalidad === 'Cloth' ? '2' : '1'}</span></button>
+                      <button onClick={() => finishSet(currentSet._id, 'visitante')} disabled={isSaving} className={`[touch-action:manipulation] active:scale-95 bg-blue-600 text-white rounded-lg font-bold py-3 hover:bg-blue-700 transition shadow-sm flex flex-col items-center justify-center ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><span className="truncate max-w-full px-1">{matchData.equipoVisitante?.nombre}</span><span className="text-2xs font-normal opacity-75">Gana Set +{matchData.modalidad === 'Cloth' ? '2' : '1'}</span></button>
+                      {matchData.modalidad === 'Cloth' && <button onClick={() => finishSet(currentSet._id, 'empate')} disabled={isSaving} className={`[touch-action:manipulation] active:scale-95 bg-slate-600 text-white rounded-lg font-bold py-3 hover:bg-slate-700 transition shadow-sm flex flex-col items-center justify-center ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><span>Empate</span><span className="text-2xs font-normal opacity-75">+1 c/u</span></button>}
                     </div>
                   )
                 ) : (
-                  <button onClick={() => startNewSet(false)} disabled={isSaving} className={`w-full bg-green-600 text-white rounded-lg font-bold text-lg py-4 hover:bg-green-700 shadow-sm flex items-center justify-center gap-2 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664l-3-2z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>Iniciar Set {sets.length + 1}</span></button>
+                  <button onClick={() => startNewSet(false)} disabled={isSaving} className={`[touch-action:manipulation] active:scale-95 w-full bg-green-600 text-white rounded-lg font-bold text-lg py-4 hover:bg-green-700 shadow-sm flex items-center justify-center gap-2 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664l-3-2z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>Iniciar Set {sets.length + 1}</span></button>
                 )}
               </div>
 
@@ -655,15 +660,15 @@ export const ControlPage: React.FC = () => {
             {/* Timeouts y Revisión: se piden en cualquier momento del punto, por eso van pegados a Cancha en Vivo */}
             <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-2 flex flex-col gap-2">
               <div className="grid grid-cols-2 gap-2">
-                <button onClick={() => pauseMatch('TIMEOUT','local')} className="bg-orange-100 text-orange-800 text-xs font-bold py-3 rounded hover:bg-orange-200">Time Out Local</button>
-                <button onClick={() => pauseMatch('TIMEOUT','visitante')} className="bg-orange-100 text-orange-800 text-xs font-bold py-3 rounded hover:bg-orange-200">Time Out Visita</button>
-                <button onClick={() => pauseMatch('REVIEW')} className="col-span-2 bg-purple-100 text-purple-800 text-xs font-bold py-3 rounded hover:bg-purple-200">Revisión Arbitral</button>
+                <button onClick={() => pauseMatch('TIMEOUT','local')} className="[touch-action:manipulation] active:scale-95 bg-orange-100 text-orange-800 text-xs font-bold py-3 rounded hover:bg-orange-200">Time Out Local</button>
+                <button onClick={() => pauseMatch('TIMEOUT','visitante')} className="[touch-action:manipulation] active:scale-95 bg-orange-100 text-orange-800 text-xs font-bold py-3 rounded hover:bg-orange-200">Time Out Visita</button>
+                <button onClick={() => pauseMatch('REVIEW')} className="[touch-action:manipulation] active:scale-95 col-span-2 bg-purple-100 text-purple-800 text-xs font-bold py-3 rounded hover:bg-purple-200">Revisión Arbitral</button>
               </div>
               <div className="pt-2 border-t border-slate-100">
                 <button
                   onClick={finalizeMatch}
                   disabled={isSaving}
-                  className="w-full bg-emerald-600 text-white font-black py-3 rounded-lg hover:bg-emerald-700 transition shadow-md uppercase tracking-widest text-sm disabled:opacity-50"
+                  className="[touch-action:manipulation] active:scale-95 w-full bg-emerald-600 text-white font-black py-3 rounded-lg hover:bg-emerald-700 transition shadow-md uppercase tracking-widest text-sm disabled:opacity-50"
                 >
                   {isSaving ? 'Guardando...' : '🏁 Finalizar Partido'}
                 </button>
@@ -677,19 +682,19 @@ export const ControlPage: React.FC = () => {
             <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-3 sticky top-0 z-20">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1">
-                  <button onClick={() => changePeriod(1)} className={`text-xs font-bold px-3 py-1.5 rounded transition-colors ${period === 1 ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>1T</button>
-                  <button onClick={() => changePeriod(2)} className={`text-xs font-bold px-3 py-1.5 rounded transition-colors ${period === 2 ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>2T</button>
+                  <button onClick={() => changePeriod(1)} className={`[touch-action:manipulation] active:scale-95 text-xs font-bold px-3 py-1.5 rounded transition-colors ${period === 1 ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>1T</button>
+                  <button onClick={() => changePeriod(2)} className={`[touch-action:manipulation] active:scale-95 text-xs font-bold px-3 py-1.5 rounded transition-colors ${period === 2 ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>2T</button>
                 </div>
                 <div className="flex flex-col items-end">
                   <span className="text-2xs font-bold text-muted uppercase tracking-wider">Reloj de Partido</span>
                   <div className="flex items-center gap-1.5">
                     <span className={`font-mono text-2xl sm:text-3xl font-bold leading-none ${isMatchRunning ? 'text-slate-800' : 'text-muted'}`}>{formatTime(matchTime)}</span>
-                    <button onClick={updateMatchTimeManual} className="text-muted hover:text-slate-500 p-2 -m-1" title="Editar tiempo de partido manualmente"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>
+                    <button onClick={updateMatchTimeManual} className="[touch-action:manipulation] active:scale-95 text-muted hover:text-slate-500 p-2 -m-1" title="Editar tiempo de partido manualmente"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>
                   </div>
                 </div>
                 <button
                   onClick={toggleMatch}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full font-bold text-sm shadow-md transition-all shrink-0 ${isMatchRunning ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-green-500 text-white hover:bg-green-600 hover:shadow-green-200'}`}
+                  className={`[touch-action:manipulation] active:scale-95 flex items-center gap-2 px-4 py-2.5 rounded-full font-bold text-sm shadow-md transition-all shrink-0 ${isMatchRunning ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-green-500 text-white hover:bg-green-600 hover:shadow-green-200'}`}
                 >
                   {isMatchRunning ? (
                     <><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg><span className="hidden sm:inline">Pausar Partido</span></>
@@ -735,7 +740,7 @@ export const ControlPage: React.FC = () => {
                 <button
                   onClick={guardarVideoUrl}
                   disabled={savingVideoUrl}
-                  className="text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 px-3 py-1.5 rounded whitespace-nowrap"
+                  className="text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 disabled:opacity-50 px-3 py-1.5 rounded whitespace-nowrap"
                 >
                   {savingVideoUrl ? 'Guardando...' : 'Guardar video'}
                 </button>
@@ -799,7 +804,7 @@ export const ControlPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleConfirmTimeEdit}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
               >
                 Guardar
               </button>

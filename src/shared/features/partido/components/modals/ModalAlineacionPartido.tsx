@@ -284,7 +284,7 @@ export const ModalAlineacionPartido = ({
                 type="button"
                 onClick={() => handleAgregarJugador('local')}
                 disabled={!nuevoJugadorLocalId || !equipoLocalId}
-                className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-50"
+                className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 disabled:opacity-50"
               >
                 Agregar
               </button>
@@ -310,7 +310,7 @@ export const ModalAlineacionPartido = ({
                 type="button"
                 onClick={() => handleAgregarJugador('visitante')}
                 disabled={!nuevoJugadorVisitanteId || !equipoVisitanteId}
-                className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-50"
+                className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 disabled:opacity-50"
               >
                 Agregar
               </button>
@@ -359,7 +359,7 @@ export const ModalAlineacionPartido = ({
                           <select
                             value={rolesPorJugador[jid] ?? ((it as any).rol as RolAlineacion) ?? 'ninguno'}
                             onChange={(event) => handleChangeRol(jid, event.target.value as RolAlineacion)}
-                            className="w-32 sm:w-40 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                            className="w-32 sm:w-40 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
                           >
                             <option value="ninguno">Sin asignar</option>
                             <option value="jugador">Jugador</option>
@@ -402,7 +402,7 @@ export const ModalAlineacionPartido = ({
                           <select
                             value={rolesPorJugador[jid] ?? ((it as any).rol as RolAlineacion) ?? 'ninguno'}
                             onChange={(event) => handleChangeRol(jid, event.target.value as RolAlineacion)}
-                            className="w-32 sm:w-40 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                            className="w-32 sm:w-40 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
                           >
                             <option value="ninguno">Sin asignar</option>
                             <option value="jugador">Jugador</option>
@@ -445,7 +445,7 @@ export const ModalAlineacionPartido = ({
             type="button"
             onClick={handleGuardar}
             disabled={saving || loading}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+            className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-brand-300"
           >
             {saving ? 'Guardando…' : 'Guardar cambios'}
           </button>

@@ -50,7 +50,7 @@ export const SeccionEstadisticasSetASet: FC<SeccionEstadisticasSetASetProps> = (
               <div key={set._id} className="bg-white rounded border">
                 {/* Header del set */}
                 <div
-                  className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4 p-3 cursor-pointer hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
+                  className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4 p-3 cursor-pointer hover:bg-slate-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
                   {...accionable(() => setSetsExpandidos(prev => ({
                     ...prev,
                     [set._id]: !prev[set._id]
@@ -59,7 +59,7 @@ export const SeccionEstadisticasSetASet: FC<SeccionEstadisticasSetASetProps> = (
                 >
                   <div className="flex items-center gap-2">
                     <svg
-                      className={`w-5 h-5 text-gray-500 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                      className={`w-5 h-5 text-slate-500 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -67,10 +67,10 @@ export const SeccionEstadisticasSetASet: FC<SeccionEstadisticasSetASetProps> = (
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                     <span className="font-medium text-lg">Set {set.numeroSet}</span>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-slate-600">
                       Estado: <span className="font-medium">{set.estadoSet}</span>
                     </span>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-slate-600">
                       Ganador: <span className="font-medium">{set.ganadorSet}</span>
                     </span>
                   </div>
@@ -99,7 +99,7 @@ export const SeccionEstadisticasSetASet: FC<SeccionEstadisticasSetASetProps> = (
           })}
         </div>
       ) : (
-        <p className="text-gray-600">No hay sets creados aún. Crea sets para ver estadísticas detalladas.</p>
+        <p className="text-slate-600">No hay sets creados aún. Crea sets para ver estadísticas detalladas.</p>
       )}
     </div>
   );

@@ -33,7 +33,7 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
+    <div className="flex min-h-dvh items-center justify-center bg-slate-50 p-4">
       <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <h1 className="mb-4 text-xl font-semibold text-slate-900 text-center">Registro Gestión Partido</h1>
         <form className="space-y-3" onSubmit={handleSubmit}>
@@ -55,7 +55,7 @@ const RegisterPage: React.FC = () => {
           </button>
         </form>
         <div className="mt-4 text-center text-sm">
-          <p>¿Ya tienes cuenta? <Link to="/login" className="text-blue-600 hover:underline">Inicia sesión aquí</Link></p>
+          <p>¿Ya tienes cuenta? <Link to="/login" className="text-brand-600 hover:underline">Inicia sesión aquí</Link></p>
         </div>
       </div>
     </div>
