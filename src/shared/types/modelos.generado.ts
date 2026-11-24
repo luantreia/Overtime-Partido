@@ -399,6 +399,7 @@ export interface EventoSet {
   por: Ref<Jugador> | null;
   entra: Ref<Jugador> | null;
   origen: EventoSetOrigen;
+  hora: string | null;
   creadoPor: string;
   _id: string;
   createdAt?: string;
@@ -786,6 +787,11 @@ export interface Partido {
     }>;
     _id: string;
     }>;
+  relojEnVivo: {
+    ancla: string;
+    segundo: number;
+    alineado: boolean;
+    } | null;
   modalidad: PartidoModalidad;
   categoria: PartidoCategoria;
   fecha: string;
@@ -925,6 +931,8 @@ export interface PlanillaSet {
     hasta: number;
     origen: 'manual' | 'cv' | 'en_vivo';
     confirmado: boolean;
+    horaDesde?: string;
+    horaHasta?: string;
     } | null;
   alineacion: Array<{
     jugador: Ref<Jugador>;
@@ -1005,6 +1013,8 @@ export interface SetPartido {
     hasta: number;
     origen: 'manual' | 'cv' | 'en_vivo';
     confirmado: boolean;
+    horaDesde?: string;
+    horaHasta?: string;
     } | null;
   alineacion: Array<{
     jugador: Ref<Jugador>;

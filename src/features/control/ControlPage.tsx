@@ -79,17 +79,6 @@ export const ControlPage: React.FC = () => {
   });
 
   const { matchTime, setTimer, suddenDeathTime, period, isMatchRunning, isSetRunning, isSuddenDeathActive, suddenDeathMode } = timersState;
-  // Reloj de partido para la captura en vivo: segundos jugados desde el inicio del partido
-  // (cada período dura matchDurationMinutes y el timer cuenta para atrás). Por ref: la captura
-  // lo lee en el momento del clic, no en el render.
-  const relojPartido = useRef({ matchTime, period });
-  relojPartido.current = { matchTime, period };
-  const segundoDePartido = useCallback(() => {
-    const { matchTime: mt, period: p } = relojPartido.current;
-    const dur = matchDurationMinutes * 60;
-    return Math.max(0, ((p || 1) - 1) * dur + (dur - mt));
-  }, []);
-
   // Refs to avoid infinite dependency loops in callbacks
   const matchDataRef = useRef<any>(null);
   useEffect(() => { matchDataRef.current = matchData; }, [matchData]);
@@ -669,7 +658,6 @@ export const ControlPage: React.FC = () => {
                         fetcher={fetcherCaptura}
                         partidoId={matchId}
                         setPartidoId={currentSet._id}
-                        obtenerTiempo={segundoDePartido}
                         origen="en_vivo"
                       />
                     </div>
