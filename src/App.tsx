@@ -5,6 +5,8 @@ import { BroadcastPage } from './features/broadcast/BroadcastPage';
 import { OverlayPage } from './features/overlay/OverlayPage';
 import { CameraCapturePage } from './features/camera';
 import LoginPage from './features/auth/pages/LoginPage';
+import OlvidePasswordPage from './features/auth/pages/OlvidePasswordPage';
+import ResetPasswordPage from './features/auth/pages/ResetPasswordPage';
 import RegisterPage from './features/auth/pages/RegisterPage';
 import { AuthProvider, useAuth } from './app/providers/AuthContext';
 import { ToastProvider } from './shared/components/Toast/ToastProvider';
@@ -37,6 +39,8 @@ function AppContent() {
 
       {/* Rutas de Autenticación */}
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/olvide-password" element={<OlvidePasswordPage />} />
+      <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
       {/* Rutas de Gestión: Con Layout y Protegidas */}
