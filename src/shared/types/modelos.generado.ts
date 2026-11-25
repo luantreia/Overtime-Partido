@@ -792,6 +792,14 @@ export interface Partido {
     }>;
     _id: string;
     }>;
+  ventana: {
+    desde: number | null;
+    hasta: number | null;
+    origen: 'manual' | 'cv' | 'en_vivo';
+    confirmado: boolean;
+    horaDesde?: string;
+    horaHasta?: string;
+    } | null;
   relojEnVivo: {
     ancla: string;
     segundo: number;
@@ -901,6 +909,14 @@ export interface PlanillaEquipo {
     }>;
     _id: string;
     }>;
+  ventana: {
+    desde: number | null;
+    hasta: number | null;
+    origen: 'manual' | 'cv' | 'en_vivo';
+    confirmado: boolean;
+    horaDesde?: string;
+    horaHasta?: string;
+    } | null;
   notas?: string;
   creadoPor: string;
   _id: string;
