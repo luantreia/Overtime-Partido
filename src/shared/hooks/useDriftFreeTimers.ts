@@ -14,6 +14,8 @@ export interface DriftTimersState {
   isSetRunning: boolean;
   isSuddenDeathActive: boolean;
   suddenDeathMode: boolean;
+  /** Duración de cada tiempo en segundos (competencia/fase/partido; 20 min si no hay nada). */
+  duracionTiempo?: number;
   // Drift-free sync metadata (Server timestamp)
   serverTimestamp?: number;
 }
@@ -30,7 +32,8 @@ export interface UseDriftFreeTimersParams {
 
 export interface ControllerActions {
   startOrResume: () => void;
-  pauseAll: () => void;
+  /** `motivo` queda en el registro del reloj de juego: time out (con quién lo pidió), revisión u otro. */
+  pauseAll: (detalle?: { motivo: 'time_out' | 'revision' | 'otro'; lado?: 'local' | 'visitante' }) => void;
   pauseSetOnly: () => void;
   setMatchTimeManual: (seconds: number) => void;
   setSetTimeManual: (seconds: number) => void;
@@ -81,6 +84,7 @@ export const useDriftFreeTimers = (params: UseDriftFreeTimersParams) => {
             isSetRunning: data.isSetRunning,
             isSuddenDeathActive: data.isSuddenDeathActive,
             suddenDeathMode: data.suddenDeathMode,
+            duracionTiempo: data.duracionTiempo ?? s.duracionTiempo,
             serverTimestamp: data.serverTimestamp
         }));
     };
@@ -107,8 +111,8 @@ export const useDriftFreeTimers = (params: UseDriftFreeTimersParams) => {
     if (stateRef.current.suddenDeathMode) sendCommand('START_SUDDEN_DEATH');
   }, [sendCommand]);
 
-  const pauseAll = useCallback(() => {
-    sendCommand('PAUSE_ALL');
+  const pauseAll = useCallback((detalle?: { motivo: 'time_out' | 'revision' | 'otro'; lado?: 'local' | 'visitante' }) => {
+    sendCommand('PAUSE_ALL', detalle ?? { motivo: 'otro' });
   }, [sendCommand]);
 
   const setMatchTimeManual = useCallback((seconds: number) => {

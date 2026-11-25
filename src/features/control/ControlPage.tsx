@@ -67,13 +67,11 @@ export const ControlPage: React.FC = () => {
   >(null);
   const [timeEditModal, setTimeEditModal] = useState<{ kind: 'match' | 'set'; value: string } | null>(null);
 
-  const matchDurationMinutes = 20; // duración base por periodo
-
   const { state: timersState, controllerActions } = useDriftFreeTimers({
     mode: 'controller',
     matchId,
     socket,
-    initialMatchTime: matchDurationMinutes * 60,
+    initialMatchTime: 20 * 60,
     initialSetTime: 3 * 60,
     initialPeriod: 1
   });
@@ -329,7 +327,10 @@ export const ControlPage: React.FC = () => {
   const changeSetWinner = debounce(changeSetWinnerInternal, 'changeSetWinner');
 
   const pauseMatch = (reason: 'TIMEOUT' | 'REVIEW' | 'GENERIC', team?: 'local' | 'visitante') => {
-    controllerActions?.pauseAll();
+    // El motivo queda en el registro del reloj de juego del partido (se ve después en el video).
+    controllerActions?.pauseAll(
+      reason === 'TIMEOUT' ? { motivo: 'time_out', lado: team } : reason === 'REVIEW' ? { motivo: 'revision' } : { motivo: 'otro' },
+    );
     // saveTimerState removed
     if (reason === 'GENERIC') return;
     const overlayType: 'TIMEOUT' | 'REVIEW' = reason === 'TIMEOUT' ? 'TIMEOUT' : 'REVIEW';
@@ -390,7 +391,7 @@ export const ControlPage: React.FC = () => {
     for (const s of sets) { await authFetch(`/set-partido/${s._id}`, { method: 'DELETE' }); }
     controllerActions?.resetAll();
     setLocalScore(0); setVisitorScore(0); setSets([]);
-    try { await authFetch(`/partidos/${matchId}`, { method: 'PUT', body: { marcadorLocal: 0, marcadorVisitante: 0, timerMatchValue: matchDurationMinutes * 60, timerMatchRunning: false, timerMatchLastUpdate: new Date(), period: 1 } }); } catch (e) { console.error('Error reset match', e); }
+    try { await authFetch(`/partidos/${matchId}`, { method: 'PUT', body: { marcadorLocal: 0, marcadorVisitante: 0, timerMatchValue: timersState.duracionTiempo ?? 20 * 60, timerMatchRunning: false, timerMatchLastUpdate: new Date(), period: 1 } }); } catch (e) { console.error('Error reset match', e); }
     socket.emit('score:update', { matchId, localScore: 0, visitorScore: 0 });
     // Manual emit removed; hook will emit updated state on resetAll state change
     addToast({ type: 'success', message: 'Partido Reiniciado' });
