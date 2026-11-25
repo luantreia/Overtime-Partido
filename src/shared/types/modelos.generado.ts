@@ -74,6 +74,7 @@ export type JugadorPartidoRol = 'jugador' | 'entrenador';
 export type JugadorTemporadaEstado = 'aceptado' | 'baja' | 'suspendido';
 export type JugadorTemporadaRol = 'jugador' | 'entrenador';
 export type KarmaLogType = 'positive' | 'negative' | 'no-show' | 'fair-play' | 'mvp';
+export type Lado = 'local' | 'visitante';
 export type LobbyBallType = 'Foam' | 'Cloth';
 export type LobbyCategoria = 'Masculino' | 'Femenino' | 'Mixto' | 'Libre';
 export type LobbyGenderPolicy = 'open' | 'male' | 'female' | 'mixed';
@@ -87,6 +88,7 @@ export type MiembroEquipoPermisos = 'stats.capture' | 'stats.edit' | 'stats.view
 export type MiembroEquipoRol = 'jugador' | 'entrenador' | 'video_analista' | 'preparador_fisico' | 'community_manager' | 'sponsor_manager' | 'staff' | 'otro';
 export type MiembroOrganizacionEstado = 'activo' | 'suspendido' | 'inactivo';
 export type MiembroOrganizacionRol = 'presidente' | 'secretario' | 'tesorero' | 'delegado' | 'arbitro' | 'coordinador' | 'staff';
+export type Motivo = 'time_out' | 'revision' | 'otro';
 export type Origen = 'inscripcion_web' | 'ranked' | 'partido' | 'manual';
 export type ParticipacionTemporadaEstado = 'activo' | 'baja' | 'expulsado';
 export type PartidoCategoria = 'Masculino' | 'Femenino' | 'Mixto' | 'Libre';
@@ -112,6 +114,7 @@ export type TargetRole = 'host' | 'rivalCaptain' | 'official';
 export type Team = 'A' | 'B' | 'none';
 export type TeamColor = 'rojo' | 'azul';
 export type TemporadaEstado = 'en_creacion' | 'en_curso' | 'finalizada';
+export type Tipo = 'inicio' | 'pausa' | 'reanuda' | 'ajuste' | 'cambio_tiempo';
 export type TipoTestMejorEs = 'mayor' | 'menor' | 'neutro';
 export type TokenUsuarioTipo = 'reset-password' | 'verificacion-email';
 export type Type = 'principal' | 'secundario' | 'linea';
@@ -230,6 +233,7 @@ export interface Competencia {
   estado: CompetenciaEstado;
   creadoPor: string;
   administradores?: Array<string>;
+  duracionTiempoMinutos: number | null;
   rankedEnabled: boolean;
   _id: string;
   createdAt?: string;
@@ -416,6 +420,7 @@ export interface Fase {
   fechaInicio?: string;
   fechaFin?: string;
   configuracion?: {
+    duracionTiempoMinutos: number | null;
     puntuacion?: {
       victoria: number;
       empate: number;
@@ -807,6 +812,16 @@ export interface Partido {
   marcadorLocal: number;
   marcadorVisitante: number;
   marcadorModificadoManualmente: boolean;
+  duracionTiempoMinutos: number | null;
+  relojJuego: Array<{
+    tipo: Tipo;
+    periodo: number;
+    hora: string;
+    restante: number;
+    corriendo?: boolean;
+    motivo?: Motivo;
+    lado?: Lado;
+    }>;
   timerMatchValue: number;
   timerMatchRunning: boolean;
   timerMatchLastUpdate: string;
