@@ -12,7 +12,7 @@
     "@types/node": "^24.9.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "overtime-kit": "github:luantreia/overtime-kit#6bf15f53781a1c3254a864c3a05ba602705d9c7f",
+    "overtime-kit": "github:luantreia/overtime-kit#63c6234557047b6596fc18912664d94dd3f5804c",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.28.0",
