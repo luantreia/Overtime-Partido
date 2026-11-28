@@ -220,6 +220,19 @@ export interface Auditoria {
   _id: string;
 }
 
+export interface CanalTv {
+  nombre: string;
+  slug: string;
+  descripcion: string;
+  orden: number;
+  activo: boolean;
+  videos?: Array<Ref<Video>>;
+  competencias?: Array<Ref<Competencia>>;
+  _id: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface Competencia {
   nombre?: string;
   descripcion?: string;
@@ -1126,4 +1139,25 @@ export interface Usuario {
   firebaseUid?: string;
   emailVerificado: boolean;
   emailVerificadoEn: string | null;
+}
+
+export interface Video {
+  youtubeId: string;
+  titulo: string;
+  etiqueta: string;
+  duracion: number | null;
+  inicio: number;
+  tramos: Array<{
+    cam: Array<number>;
+    d: number;
+    }>;
+  partido: Ref<Partido> | null;
+  orden: number;
+  competencia: Ref<Competencia> | null;
+  organizacion: Ref<Organizacion> | null;
+  enTv: boolean;
+  creadoPor: string | null;
+  _id: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
