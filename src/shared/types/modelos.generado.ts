@@ -228,6 +228,10 @@ export interface CanalTv {
   activo: boolean;
   videos?: Array<Ref<Video>>;
   competencias?: Array<Ref<Competencia>>;
+  fuentesYoutube: Array<{
+    channelId: string;
+    nombre: string;
+    }>;
   _id: string;
   createdAt?: string;
   updatedAt?: string;
