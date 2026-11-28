@@ -237,6 +237,15 @@ export interface CanalTv {
   updatedAt?: string;
 }
 
+export interface CanalYoutube {
+  channelId: string;
+  nombre: string;
+  creadoPor: string | null;
+  _id: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface Competencia {
   nombre?: string;
   descripcion?: string;
